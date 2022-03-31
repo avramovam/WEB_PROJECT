@@ -1,6 +1,12 @@
 from flask import Flask, render_template
+#from orm import db_session
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'abcdef35q3pouihmglgtjcdkoiyug'
+
+@app.errorhandler(404)
+def e404(error):
+    return render_template('404.html'), error.code
 
 @app.route('/')
 @app.route('/index')
