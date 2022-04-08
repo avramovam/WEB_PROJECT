@@ -16,7 +16,14 @@ def page_index():
 
 @app.route('/search')
 def page_search():
-    return render_template('search.html')
+    a_name = request.args.get('name')
+    f_name = (lambda g: a_name in g['name']) if a_name is not None else (lambda g: True)
+
+    filtered = list()
+    for g in games:
+        if f_name(g):
+            filtered.append(g)
+    return render_template('search.html', games=filtered)
 
 @app.route('/game')
 def page_game():

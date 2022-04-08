@@ -1,0 +1,15 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - поиск ({{ games|length }})</title>
+{% endblock %}
+
+{% block body %}
+    <div class="mainframe" style="font-family: Montserrat">
+        {% for i in games %}
+        <p style="text-indent: 16px">
+            {{ i }}
+        </p>
+        {% endfor %}
+    </div>
+{% endblock %}
