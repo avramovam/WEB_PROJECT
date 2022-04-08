@@ -42,3 +42,40 @@ body {
     background: rgb(85,85,85);
     background: linear-gradient(180deg, rgba(85,85,85,1) 0%, rgba(0,0,0,1) 100%);
 }
+
+.gamecard {
+    border: solid #222;
+    border-radius: 20px;
+    background: rgba(17, 17, 17, 0.6);
+    padding: 20px;
+    margin: 20px 0;
+    overflow: auto;
+}
+
+.button-to-game-bg {
+    padding: 8px;
+    border-radius: 20px;
+    display: inline-block;
+    background: rgb(17,204,17);
+    background: radial-gradient(circle, rgba(17,204,17,1) 0%, rgba(17,170,17,1) 100%);
+}
+
+a.button-to-game {
+    color: #eee;
+    text-decoration: none;
+}
+
+a.button-to-game:hover {
+    color: #eee;
+    text-decoration: none;
+}
+
+a.button-to-game:visited {
+    color: #eee;
+    text-decoration: none;
+}
+
+a.button-to-game:active {
+    color: #eee;
+    text-decoration: none;
+}

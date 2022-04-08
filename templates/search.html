@@ -6,10 +6,40 @@
 
 {% block body %}
     <div class="mainframe" style="font-family: Montserrat">
-        {% for i in games %}
-        <p style="text-indent: 16px">
-            {{ i }}
-        </p>
+        {% for g in games %}
+            {% set name = g["name"] %}
+            <div class="gamecard">
+                <h1>{{ name }}</h1>
+                <div style="margin-right: 10px; float: left">
+                    <div style="border: solid #333; background: #555; width: 400px; display: inline-block;" align="left">
+                        {% if "img_url" in g %}
+                            <img src="{{ g['img_url'] }}" alt="{{ name }}" style="max-width: 100%; max-height: 100%;">
+                        {% endif %}
+                    </div>
+                </div>
+                {% if "full_desc" in g %}
+                <p style="text-indent: 10px">{{ g['full_desc']['desc'] }}</p>
+                {% endif %}
+                <div style="padding: 0 10%">
+                    <table style="width: 100%; table-layout: fixed">
+                        <tr>
+                            <td style="padding: 8px" align="left">
+                                <b>0</b> рецензий
+                            </td>
+                            <td align="center" style="color: #b11; padding: 8px">
+                                Нет записей о турнирах
+                            </td>
+                            <td style="padding: 8px" align="right">
+                                <div class="button-to-game-bg">
+                                    <a class="button-to-game" href="/game?gameid={{ g['id'] }}">
+                                        Перейти к странице
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         {% endfor %}
     </div>
 {% endblock %}

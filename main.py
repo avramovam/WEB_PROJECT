@@ -20,9 +20,10 @@ def page_search():
     f_name = (lambda g: a_name in g['name']) if a_name is not None else (lambda g: True)
 
     filtered = list()
-    for g in games:
-        if f_name(g):
-            filtered.append(g)
+    for i in range(len(games)):
+        g = games[i]
+        if f_name(g) and g not in filtered:
+            filtered.append(g | {'id':i})
     return render_template('search.html', games=filtered)
 
 @app.route('/game')
@@ -56,6 +57,6 @@ def page_game():
 if __name__ == '__main__':
     print('Загружается games.json...')
     with open('db/games.json', 'r') as f:
-        games = json.load(f)
+        games: list[dict] = json.load(f)
     print('Загрузка завершена! Запускаем приложение...')
     app.run(port=8080, host='127.0.0.1')
