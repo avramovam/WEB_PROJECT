@@ -1,9 +1,31 @@
 {% extends "ext.html" %}
 
 {% block head %}
-<!-- Сюда title и прочие элементы -->
+    <title>Omegame</title>
 {% endblock %}
 
 {% block body %}
-<!-- Сюда тело -->
+<div style="font-family: Montserrat">
+    <div style="text-align: center; margin: 200px 0 100px 0">
+        <div style="font-size: 500%">
+            <b>Omegame</b>
+        </div>
+        <div>
+            <i>Поисковая система подбора игр из Steam</i>
+        </div>
+    </div>
+    <div style="margin: 0 20% 50% 20%;">
+        <div class="input-group mb-3">
+            <form action="/search" method="get" style="display: flex; width: 100%">
+                <input type="text" name="name" class="form-control" aria-describedby="button-addon2"
+                       style="background: transparent; color: #fff; width: 100%">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">
+                        Искать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
