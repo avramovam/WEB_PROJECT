@@ -6,6 +6,8 @@
 
 {% block body %}
     <div style="font-family: Montserrat">
+        {% include "search_engine.html" %}
+        <!-- Блоки игр -->
         {% for g in games %}
             {% set name = g["name"] %}
             <div class="gamecard">

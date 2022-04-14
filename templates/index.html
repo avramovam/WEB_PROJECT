@@ -14,18 +14,8 @@
             <i>Поисковая система подбора игр из Steam</i>
         </div>
     </div>
-    <div style="margin: 0 20% 50% 20%;">
-        <div class="input-group mb-3">
-            <form action="/search" method="get" style="display: flex; width: 100%">
-                <input type="text" name="name" class="form-control" aria-describedby="button-addon2"
-                       style="background: transparent; color: #fff; width: 100%">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">
-                        Искать
-                    </button>
-                </div>
-            </form>
-        </div>
+    <div style="margin-bottom: 50%"> <!-- margin-bottom - чтобы нижняя часть страницы не была белой -->
+        {% include "search_engine.html" %}
     </div>
 </div>
 {% endblock %}

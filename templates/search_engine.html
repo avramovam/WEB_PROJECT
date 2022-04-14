@@ -1,0 +1,15 @@
+<!-- Это - включаемый блок в include-выражении jinja2. Используется только в index.html и search.html. -->
+
+<div style="margin: 10 20% 10% 20%;">
+    <div class="input-group mb-3">
+        <form action="/search" method="get" style="display: flex; width: 100%">
+            <input type="text" name="name" class="form-control" aria-describedby="button-addon2"
+                   style="background: transparent; color: #fff; width: 100%">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">
+                    Искать
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
