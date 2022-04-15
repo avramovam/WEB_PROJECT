@@ -53,13 +53,22 @@ def logout():
 @app.route('/search')
 def page_search():
     a_name = request.args.get('name')
-    f_name = (lambda g: a_name in g['name']) if a_name is not None else (lambda g: True)
+    f_name = (lambda name: a_name in name) if a_name is not None else (lambda name: True)
+    a_tags = [x.strip().lower() for x in request.args.get('tags').split(',')]
+    a_tags = a_tags if a_tags != [''] else None
+    f_tags = (lambda tags: all(x in tags for x in a_tags)) if a_tags is not None else (lambda tags: True)
 
     filtered = list()
+    filtered_names = set()
     for i in range(len(games)):
         g = games[i]
-        if f_name(g) and g not in filtered:
+        filters = (
+                      f_name(g['name']) and
+                      f_tags(set(arg.lower() for arg in g.get('popu_tags', [])))
+                  )
+        if g['name'] not in filtered_names and filters and g not in filtered:
             filtered.append(g | {'id':i})
+            filtered_names.add(g['name'])
     return render_template('search.html', games=filtered)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -118,5 +127,6 @@ if __name__ == '__main__':
     print('Загружается games.json...')
     with open('db/games.json', 'r') as f:
         games: list[dict] = json.load(f)
+    #print(games[100]) # тестовый запуск
     print('Загрузка завершена! Запускаем приложение...')
     app.run(port=8080, host='127.0.0.1')
