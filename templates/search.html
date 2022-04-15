@@ -43,5 +43,25 @@
                 </div>
             </div>
         {% endfor %}
+        <!-- Кнопки взад и перед -->
+        <table style="table-layout: fixed; width: 100%">
+            <tr>
+                <td align="center">
+                    {% if page > 0 %}
+                        {% set mylink = link + "&page=" + (page-1)|string %} <!-- ссылка для предыдущей страницы -->
+                        <a class="button-to-game" href="{{ mylink }}">Предыдущая страница</a>
+                    {% endif %}
+                </td>
+                <td align="center">
+                    <!-- пока пусто -->
+                </td>
+                <td align="center">
+                    {% if page < maxpage %}
+                        {% set mylink = link + "&page=" + (page+1)|string %} <!-- ссылка для следующей страницы -->
+                        <a class="button-to-game" href="{{ mylink }}">Следующая страница</a>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
     </div>
 {% endblock %}

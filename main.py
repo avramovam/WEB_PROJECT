@@ -1,6 +1,7 @@
 import flask
 from flask import Flask, render_template, request, redirect
 from flask_login import LoginManager, login_user, login_required, logout_user
+from math import floor
 
 from data import db_session
 from data.login_form import LoginForm
@@ -55,8 +56,8 @@ def logout():
 def page_search():
     a_name = request.args.get('name')
     f_name = (lambda name: a_name in name) if a_name is not None else (lambda name: True)
-    a_tags = [x.strip().lower() for x in request.args.get('tags').split(',')]
-    a_tags = a_tags if a_tags != [''] else None
+    a_tags = request.args.get('tags')
+    a_tags = [x.strip().lower() for x in a_tags.split(',')] if a_tags is not None else None
     f_tags = (lambda tags: all(x in tags for x in a_tags)) if a_tags is not None else (lambda tags: True)
     a_page = request.args.get('page')
     a_page = int(a_page) if a_page is not None else 0
@@ -75,7 +76,11 @@ def page_search():
         if g['name'] not in filtered_names and filters and g not in filtered:
             filtered.append(g | {'id':i})
             filtered_names.add(g['name'])
-    return render_template('search.html', games=filtered[startwith:startwith+pagesize])
+    allargs = dict(request.args)
+    stringified_args = [f'{k}={allargs[k]}' for k in allargs if k != 'page'] # список строк вида "arg=value"
+    recursive_link = '/search?' + '&'.join(stringified_args) # для ссылки на след. страницу
+    return render_template('search.html', games=filtered[startwith:startwith+pagesize],
+                           link=recursive_link, page=a_page, maxpage=floor(len(filtered)/pagesize))
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
