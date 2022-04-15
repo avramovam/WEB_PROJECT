@@ -1,3 +1,4 @@
+import flask
 from flask import Flask, render_template, request, redirect
 from flask_login import LoginManager, login_user, login_required, logout_user
 
@@ -57,6 +58,11 @@ def page_search():
     a_tags = [x.strip().lower() for x in request.args.get('tags').split(',')]
     a_tags = a_tags if a_tags != [''] else None
     f_tags = (lambda tags: all(x in tags for x in a_tags)) if a_tags is not None else (lambda tags: True)
+    a_page = request.args.get('page')
+    a_page = int(a_page) if a_page is not None else 0
+
+    pagesize = 20
+    startwith = a_page*pagesize if a_page is not None else 0
 
     filtered = list()
     filtered_names = set()
@@ -69,7 +75,7 @@ def page_search():
         if g['name'] not in filtered_names and filters and g not in filtered:
             filtered.append(g | {'id':i})
             filtered_names.add(g['name'])
-    return render_template('search.html', games=filtered)
+    return render_template('search.html', games=filtered[startwith:startwith+pagesize])
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
