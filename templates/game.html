@@ -10,7 +10,11 @@
             <div class="column" style="width: 75%"> <!-- главная часть -->
                 <div style="font-size: 150%">
                     <div style="font-size: 200%">
-                        {{ name }}
+                        {% if steamlink == "no link" %} <!-- ссылки нет -->
+                            {{ name }}
+                        {% else %}
+                            <a class="white" href="{{ steamlink }}">{{ name }}</a>
+                        {% endif %}
                     </div>
                     <div style="color: rgba(238, 238, 238, 0.5);">{{ date }} | {{ dev }}</div>
                 </div>
@@ -30,7 +34,7 @@
         </div>
         <div class="columned-content"> <!-- 2/2: подробности -->
             <div class="column"> <!-- описание -->
-
+                {{ desc }}
             </div>
             <div class="column"> <!-- турниры -->
 

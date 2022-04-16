@@ -60,22 +60,18 @@ body {
     background: radial-gradient(circle, rgba(17,204,17,1) 0%, rgba(17,170,17,1) 100%);
 }
 
-a.button-to-game {
+a.white, a.white:hover, a.white:visited, a.white:active {
     color: #eee;
+}
+
+a.white.special, a.white.special:visited {
     text-decoration: none;
 }
 
-a.button-to-game:hover {
-    color: #eee;
-    text-decoration: none;
+a.white.special:hover, a.white:active {
+    text-decoration: underline;
 }
 
-a.button-to-game:visited {
-    color: #eee;
-    text-decoration: none;
-}
-
-a.button-to-game:active {
-    color: #eee;
+a.white.noul, a.white.noul:hover, a.white.noul:visited, a.white.noul:active {
     text-decoration: none;
 }

@@ -74,13 +74,13 @@ def page_search():
                       f_tags(set(arg.lower() for arg in g.get('popu_tags', [])))
                   )
         if g['name'] not in filtered_names and filters and g not in filtered:
-            filtered.append(g | {'id':i})
+            filtered.append(g | {'id':i, 'tournum':0, 'acttournum':0})
             filtered_names.add(g['name'])
     allargs = dict(request.args)
     stringified_args = [f'{k}={allargs[k]}' for k in allargs if k != 'page'] # список строк вида "arg=value"
     recursive_link = '/search?' + '&'.join(stringified_args) # для ссылки на след. страницу
     return render_template('search.html', games=filtered[startwith:startwith+pagesize],
-                           link=recursive_link, page=a_page, maxpage=floor(len(filtered)/pagesize))
+                           link=recursive_link, page=a_page, maxpage=floor((len(filtered)-1)/pagesize))
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
@@ -128,7 +128,7 @@ def page_game():
                            dev=gamedata.get('developer', '<Разработчик не указан>'),
                            cents=gamedata.get('price', '<Цена не указана>'),
                            steamid=gamedata.get('url_info', {}).get('id', '<Не указан SteamID>'),
-                           steamlink=gamedata.get('ulr_info', {}).get('url', 'no link'),
+                           steamlink=gamedata.get('url_info', {}).get('url', 'no link'),
                            imgurl=gamedata['img_url'] # ладно, может не единственный...
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )

@@ -11,7 +11,11 @@
         {% for g in games %}
             {% set name = g["name"] %}
             <div class="gamecard">
-                <h1>{{ name }}</h1>
+                {% if "url_info" in g and "url" in g['url_info'] %}
+                    <h1><a class="white" href="{{ g['url_info']['url'] }}">{{ name }}</a></h1>
+                {% else %}
+                    <h1>{{ name }}</h1>
+                {% endif %}
                 <div style="margin-right: 10px; float: left">
                     <div style="border: solid #333; background: #555; width: 400px; display: inline-block;" align="left">
                         {% if "img_url" in g %}
@@ -20,7 +24,7 @@
                     </div>
                 </div>
                 {% if "full_desc" in g %}
-                <p style="text-indent: 10px">{{ g['full_desc']['desc'] }}</p>
+                <p style="text-indent: 10px">{{ g['full_desc']['desc'][:700] }}...</p>
                 {% endif %}
                 <div style="padding: 0 10%">
                     <table style="width: 100%; table-layout: fixed">
@@ -28,12 +32,19 @@
                             <td style="padding: 8px" align="left">
                                 <b>0</b> рецензий
                             </td>
-                            <td align="center" style="color: #b11; padding: 8px">
-                                Нет записей о турнирах
-                            </td>
+                            {% if g['tournum'] > 0 %}
+                                <td align="center" style="padding: 8px">
+                                    <div style="color: #1b1">
+                                        Идёт {{ g['acttournum'] }} турнир(-а/-ов)
+                                    </div>
+                                    <div style="color: #d91">
+                                        Прошло {{ g['tournum']-g['acttournum'] }} турнир(-а/-ов)
+                                    </div>
+                                </td>
+                            {% endif %}
                             <td style="padding: 8px" align="right">
                                 <div class="button-to-game-bg">
-                                    <a class="button-to-game" href="/game?gameid={{ g['id'] }}">
+                                    <a class="white noul" href="/game?gameid={{ g['id'] }}">
                                         Перейти к странице
                                     </a>
                                 </div>
@@ -49,7 +60,7 @@
                 <td align="center">
                     {% if page > 0 %}
                         {% set mylink = link + "&page=" + (page-1)|string %} <!-- ссылка для предыдущей страницы -->
-                        <a class="button-to-game" href="{{ mylink }}">Предыдущая страница</a>
+                        <a class="white special" href="{{ mylink }}">Предыдущая страница</a>
                     {% endif %}
                 </td>
                 <td align="center">
@@ -58,7 +69,7 @@
                 <td align="center">
                     {% if page < maxpage %}
                         {% set mylink = link + "&page=" + (page+1)|string %} <!-- ссылка для следующей страницы -->
-                        <a class="button-to-game" href="{{ mylink }}">Следующая страница</a>
+                        <a class="white special" href="{{ mylink }}">Следующая страница</a>
                     {% endif %}
                 </td>
             </tr>
