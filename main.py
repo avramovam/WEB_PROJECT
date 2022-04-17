@@ -1,11 +1,12 @@
-import flask
 from flask import Flask, render_template, request, redirect
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
+from ntpath import isfile
 
 from data import db_session
 from data.login_form import LoginForm
 from data.users import User
+from data.tournaments import Tournaments
 from data.register import RegisterForm
 import json
 
@@ -25,14 +26,12 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
@@ -47,7 +46,6 @@ def reqister():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Register', form=form,
                                    message="Passwords don't match")
-        db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template('register.html', title='Register', form=form,
                                    message="This user already exists")
@@ -56,6 +54,7 @@ def reqister():
             surname=form.surname.data,
             age=form.age.data,
             email=form.email.data,
+            level=0,
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -68,12 +67,16 @@ def reqister():
 def logout():
     logout_user()
     return redirect("/")
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+    return render_template('404.html')
 #endregion
 
 #region [ОСНОВНЫЕ СТРАНИЦЫ]
 @app.route("/")
 def index():
-    db_sess = db_session.create_session()
     users = db_sess.query(User).all()
     names = {name.id: (name.surname, name.name) for name in users}
     return render_template("index.html", names=names, title='Games')
@@ -113,7 +116,7 @@ def page_game():
     steamid = request.args.get('steamid')
     if steamid is not None: # указан steamid игры, который нужно найти
         for i in range(len(games)):
-            if games[i]['url_info']['id'] == steamid:
+            if 'url_info' in games[i] and games[i]['url_info']['id'] == steamid:
                 break # найден steamid
         else: # не найден steamid ---------------------------.
             return redirect('/', 301) # возвращаемся домой   |
@@ -124,6 +127,8 @@ def page_game():
         if id is None: # даже id нет
             redirect('/', 301) # возвращаемся домой
     gamedata = games[id]
+    tournaments = db_sess.query(Tournaments).filter(Tournaments.gameid == id).all()
+    print(tournaments)
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
                            desc=gamedata.get('full_desc', {'desc':'<Нет описания>'})['desc'],
@@ -132,13 +137,25 @@ def page_game():
                            cents=gamedata.get('price', '<Цена не указана>'),
                            steamid=gamedata.get('url_info', {}).get('id', '<Не указан SteamID>'),
                            steamlink=gamedata.get('url_info', {}).get('url', 'no link'),
-                           imgurl=gamedata['img_url'] # ладно, может не единственный...
+                           imgurl=gamedata['img_url'], # ладно, может не единственный...
+                           tournaments=tournaments,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )
 #endregion
 
 if __name__ == '__main__':
-    db_session.global_init("db/users.sqlite")
+    if not isfile('db/alldata.sqlite'):
+        print('База данных не найдена - генерируется новая.')
+        db_session.global_init("db/alldata.sqlite")
+        db_sess = db_session.create_session()
+        rootuser = User(name='Root', surname='User', age='99', email='root@admin.com', level=3)
+        rootuser.set_password('ULTRA_RELIABLE_PASSWORD')
+        db_sess.add(rootuser)
+        db_sess.commit()
+        db_sess.close()
+    else:
+        db_session.global_init("db/alldata.sqlite")
+        db_sess = db_session.create_session()
     print('Загружается games.json...')
     with open('db/games.json', 'r') as f:
         games: list[dict] = json.load(f)

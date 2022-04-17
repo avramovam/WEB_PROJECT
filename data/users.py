@@ -16,6 +16,7 @@ class User(SqlAlchemyBase, UserMixin):
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modifed_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+    level = sqlalchemy.Column(sqlalchemy.SmallInteger, default=0)
 
 
     def __repr__(self):
