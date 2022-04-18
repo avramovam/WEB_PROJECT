@@ -1,0 +1,17 @@
+{% extends "ext.html" %}
+
+{% block body %}
+</head>
+<div class="text-center">
+    <h1>Личный кабинет</h1>
+    <h1>Имя пользователя: {{ name }} {{ surname}}<br>
+    Электронная почта: {{ email }}<br>
+    Возраст: {{ age }}<br>
+    Активных турниров: в разработке<br>
+        {% if id != 0 %}
+        <br>
+        <a href="/profile_edit/id={{ current_user.id }}"> Изменить </a>
+        {% endif %}
+    </h1>
+</div>
+{% endblock %}

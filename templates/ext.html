@@ -5,7 +5,7 @@
         {% if current_user.is_authenticated %}
         <div class="navbar-brand">
             <a class="white special" style="font-size: 125%; display: block"
-               href="/user?id={{ current_user.id }}">{{ current_user.name }} {{ current_user.surname }}</a>
+               href="/user/id={{ current_user.id }}">{{ current_user.name }} {{ current_user.surname }}</a>
             {% if current_user.level > 0 %}
                 {% if current_user.level == 1 %}
                     <div style="color: #ad2; font-size: 80%; display: inline; font-style: italic">Модератор</div>

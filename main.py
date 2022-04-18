@@ -1,3 +1,5 @@
+import sqlite3
+
 from flask import Flask, render_template, request, redirect
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
@@ -68,10 +70,46 @@ def logout():
     logout_user()
     return redirect("/")
 
-@app.route('/admin', methods=['GET', 'POST'])
+@app.route('/user/id=<int:id>', methods=['GET', 'POST'])
 @login_required
-def admin():
-    return render_template('404.html')
+def profile(id):
+    con = sqlite3.connect("db/alldata.sqlite")
+    cur = con.cursor()
+    result = cur.execute(f"""SELECT name, surname, email, age FROM users WHERE id={id}""").fetchall()[0]
+    return render_template("admin.html", name=result[0], surname=result[1], email=result[2], age=result[3])
+
+
+@app.route('/profile_edit/id=<int:id>', methods=['GET', 'POST'])
+@login_required
+def profile_edit(id):
+    form = RegisterForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        users = db_sess.query(User).filter(User.id == id).first()
+        if users:
+            form.email.data = users.email
+            form.password.data = users.hashed_password
+            form.password_again.data = users.hashed_password
+            form.name.data = users.name
+            form.surname.data = users.surname
+            form.age.data = users.age
+        else:
+            e404(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        users = db_sess.query(User).filter(User.id == id).first()
+        if users:
+            users.email = form.email.data
+            users.password = form.password.data
+            users.password_again = form.password.data
+            users.name = form.name.data
+            users.surname = form.surname.data
+            users.age = form.age.data
+            db_sess.commit()
+            return redirect('/')
+        else:
+            e404(404)
+    return render_template('profile_edit.html', form=form)
 #endregion
 
 #region [ОСНОВНЫЕ СТРАНИЦЫ]
