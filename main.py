@@ -1,7 +1,5 @@
-import sqlite3
-
-import data.db_session
-from flask import Flask, render_template, request, redirect
+#import data.db_session
+from flask import Flask, render_template, request, redirect, session
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
 from ntpath import isfile
@@ -91,12 +89,9 @@ def profile():
 @app.route('/profile_edit', methods=['GET', 'POST'])
 @login_required
 def profile_edit():
-    id = int(request.args.get('id', 0))
-    if not (1 <= id <= db_sess.query(sql_funcs.max(User.id)).first()[0]):
-        return e404(NotFound)
+    id = int(session['_user_id'])
     form = RegisterForm()
     if request.method == "GET":
-        db_sess = db_session.create_session()
         users = db_sess.query(User).filter(User.id == id).first()
         if users:
             form.email.data = users.email
@@ -108,7 +103,6 @@ def profile_edit():
         else:
             e404(404)
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         users = db_sess.query(User).filter(User.id == id).first()
         if users:
             users.email = form.email.data
