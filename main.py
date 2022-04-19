@@ -1,11 +1,14 @@
 import sqlite3
 
+import data.db_session
 from flask import Flask, render_template, request, redirect
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
 from ntpath import isfile
+from werkzeug.exceptions import NotFound
 
 from data import db_session
+from data.db_session import func as sql_funcs
 from data.login_form import LoginForm
 from data.users import User
 from data.tournaments import Tournaments
@@ -70,18 +73,27 @@ def logout():
     logout_user()
     return redirect("/")
 
-@app.route('/user/id=<int:id>', methods=['GET', 'POST'])
+# не убирать, это админ-панель. позже решим, что с ней делать
+@app.route('/admin', methods=['GET', 'POST'])
 @login_required
-def profile(id):
-    con = sqlite3.connect("db/alldata.sqlite")
-    cur = con.cursor()
-    result = cur.execute(f"""SELECT name, surname, email, age FROM users WHERE id={id}""").fetchall()[0]
-    return render_template("admin.html", name=result[0], surname=result[1], email=result[2], age=result[3])
+def admin():
+    return e404(NotFound)
+
+@app.route('/user', methods=['GET', 'POST'])
+def profile():
+    id = int(request.args.get('id', 0))
+    if not (1 <= id <= db_sess.query(sql_funcs.max(User.id)).first()[0]):
+        return e404(NotFound)
+    user = db_sess.query(User).filter(User.id == id).first()
+    return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age)
 
 
-@app.route('/profile_edit/id=<int:id>', methods=['GET', 'POST'])
+@app.route('/profile_edit', methods=['GET', 'POST'])
 @login_required
-def profile_edit(id):
+def profile_edit():
+    id = int(request.args.get('id', 0))
+    if not (1 <= id <= db_sess.query(sql_funcs.max(User.id)).first()[0]):
+        return e404(NotFound)
     form = RegisterForm()
     if request.method == "GET":
         db_sess = db_session.create_session()

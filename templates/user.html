@@ -1,10 +1,13 @@
 {% extends "ext.html" %}
 
+{% block head %}
+<title>Omegame - {{ name }} {{ surname }}</title>
+{% endblock %}
+
 {% block body %}
-</head>
 <div class="text-center">
     <h1>Личный кабинет</h1>
-    <h1>Имя пользователя: {{ name }} {{ surname}}<br>
+    <h1>Имя пользователя: {{ name }} {{ surname }}<br>
     Электронная почта: {{ email }}<br>
     Возраст: {{ age }}<br>
     Активных турниров: в разработке<br>
