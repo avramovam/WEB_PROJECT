@@ -106,7 +106,7 @@ def profile_edit(id):
             users.surname = form.surname.data
             users.age = form.age.data
             db_sess.commit()
-            return redirect('/')
+            return redirect(f'/')
         else:
             e404(404)
     return render_template('profile_edit.html', form=form)

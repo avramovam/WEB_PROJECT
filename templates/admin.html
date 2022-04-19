@@ -1,17 +1,36 @@
-{% extends "ext.html" %}
+{% extends "base.html" %}
 
 {% block body %}
 </head>
 <div class="text-center">
     <h1>Личный кабинет</h1>
-    <h1>Имя пользователя: {{ name }} {{ surname}}<br>
-    Электронная почта: {{ email }}<br>
-    Возраст: {{ age }}<br>
-    Активных турниров: в разработке<br>
-        {% if id != 0 %}
+</div>
+<body>
+<img src="https://www.vtp-club.ru/img/user.png" width="200" alt="photo">
+<h1>{{ name }} {{ surname}}</h1>
+<p>Возраст: {{ age }}</p>
+<hr>
+<h2>Мой email: {{ email }}</h2>
+<h2>Любимые игры: </h2>
+<ol>
+    <li> {в разработке} </li>
+</ol>
+<h2>Текущие турниры</h2>
+<table>
+    <tr>
+        <th>Название турнира  </th>
+        <th>Дата начала  </th>
+        <th>Текущий статус  </th>
+    </tr>
+</table>
+
+{% if id != 0 %}
         <br>
         <a href="/profile_edit/id={{ current_user.id }}"> Изменить </a>
         {% endif %}
-    </h1>
-</div>
+<h1></h1>
+<form action="/">
+      <a class="back_button" href="/">Back</a>
+</form>
+</body>
 {% endblock %}
