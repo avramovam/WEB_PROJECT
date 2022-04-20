@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <title>Omegame - Изменение данных профиля</title>
+{% endblock %}
+
 {% block body %}
     <h1>Изменить данные аккаунта</h1>
     <form action="" method="post">
@@ -7,7 +11,7 @@
         {{ form.csrf_token }}
         <p>
             {{ form.email.label }}<br>
-            {{ form.email(class="form-control", type="email") }}<br>
+            {{ form.email(class="form-control form-transparent", type="email") }}<br>
             {% for error in form.email.errors %}
         <p class="alert alert-danger" role="alert">
             {{ error }}
@@ -16,7 +20,7 @@
         </p>
         <p>
             {{ form.password.label }}<br>
-            {{ form.password(class="form-control", type="password") }}<br>
+            {{ form.password(class="form-control form-transparent", type="password") }}<br>
             {% for error in form.password.errors %}
         <p class="alert alert-danger" role="alert">
             {{ error }}
@@ -25,7 +29,7 @@
         </p>
         <p>
             {{ form.password_again.label }}<br>
-            {{ form.password_again(class="form-control", type="password") }}<br>
+            {{ form.password_again(class="form-control form-transparent", type="password") }}<br>
             {% for error in form.password_again.errors %}
         <p class="alert alert-danger" role="alert">
             {{ error }}
@@ -34,7 +38,7 @@
         </p>
         <p>
             {{ form.surname.label }}<br>
-            {{ form.surname(class="form-control") }}<br>
+            {{ form.surname(class="form-control form-transparent") }}<br>
             {% for error in form.surname.errors %}
         <p class="alert alert-danger" role="alert">
             {{ error }}
@@ -43,7 +47,7 @@
         </p>
         <p>
             {{ form.name.label }}<br>
-            {{ form.name(class="form-control") }}<br>
+            {{ form.name(class="form-control form-transparent") }}<br>
             {% for error in form.name.errors %}
         <p class="alert alert-danger" role="alert">
             {{ error }}
@@ -52,7 +56,7 @@
         </p>
         <p>
             {{ form.age.label }}<br>
-            {{ form.age(class="form-control") }}<br>
+            {{ form.age(class="form-control form-transparent") }}<br>
             {% for error in form.age.errors %}
         <p class="alert alert-danger" role="alert">
             {{ error }}

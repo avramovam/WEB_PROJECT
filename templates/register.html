@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <title>Omegame - Регистрация</title>
+{% endblock %}
+
 {% block body %}
     <div style="font-size: 400%; font-weight: 700; margin-bottom: 40px">Добро пожаловать в Omegame!</div>
     <div style="padding-left: 40px; margin-bottom: 40px">
@@ -15,6 +19,16 @@
         {{ form.hidden_tag() }}
         {{ form.csrf_token }}
         <p>
+            <h3>{{ form.nickname.label }}</h3>
+            <div>Ваш никнейм – псевдоним, который будем виден всем. пользователям на сайте.</div>
+            {{ form.nickname(class="form-control form-transparent") }}<br>
+            {% for error in form.errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </p>
+        <p>
             <h3>{{ form.email.label }}</h3>
             <div>
                 Мы свяжемся с вами через email чтобы подтвердить ваш аккаунт.
@@ -22,7 +36,7 @@
                     (на самом деле мы пока так не умеем)
                 </div>
             </div>
-            {{ form.email(class="form-control", type="email") }}<br>
+            {{ form.email(class="form-control form-transparent", type="email") }}<br>
             {% for error in form.email.errors %}
                 <p class="alert alert-danger" role="alert">
                     {{ error }}
@@ -31,7 +45,7 @@
         </p>
         <p>
             <h3>{{ form.password.label }}</h3>
-            {{ form.password(class="form-control", type="password") }}<br>
+            {{ form.password(class="form-control form-transparent", type="password") }}<br>
             {% for error in form.password.errors %}
                 <p class="alert alert-danger" role="alert">
                     {{ error }}
@@ -40,7 +54,7 @@
         </p>
         <p>
             <h3>{{ form.password_again.label }}</h3>
-            {{ form.password_again(class="form-control", type="password") }}<br>
+            {{ form.password_again(class="form-control form-transparent", type="password") }}<br>
             {% for error in form.password_again.errors %}
                 <p class="alert alert-danger" role="alert">
                     {{ error }}
@@ -49,7 +63,7 @@
         </p>
         <p>
             <h3>{{ form.surname.label }}</h3>
-            {{ form.surname(class="form-control") }}<br>
+            {{ form.surname(class="form-control form-transparent") }}<br>
             {% for error in form.surname.errors %}
                 <p class="alert alert-danger" role="alert">
                     {{ error }}
@@ -58,7 +72,7 @@
         </p>
         <p>
             <h3>{{ form.name.label }}</h3>
-            {{ form.name(class="form-control") }}<br>
+            {{ form.name(class="form-control form-transparent") }}<br>
             {% for error in form.name.errors %}
                 <p class="alert alert-danger" role="alert">
                     {{ error }}
@@ -67,7 +81,7 @@
         </p>
         <p>
             <h3>{{ form.age.label }}</h3>
-            {{ form.age(class="form-control") }}<br>
+            {{ form.age(class="form-control form-transparent") }}<br>
             {% for error in form.age.errors %}
                 <p class="alert alert-danger" role="alert">
                     {{ error }}

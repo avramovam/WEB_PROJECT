@@ -35,12 +35,16 @@ def load_user(user_id):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        user = db_sess.query(User).filter(User.email == form.email_or_nickname.data).first()
+        if not user: # введена не почта
+            user = db_sess.query(User).filter(User.nickname == form.email_or_nickname.data).first()
+            if not user: # введено неправильно
+                return render_template('login.html', message="Введен неверный никнейм, почта или пароль.", form=form)
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
-        return render_template('login.html', message="Wrong login or password", form=form)
-    return render_template('login.html', title='Authorization', form=form)
+        return render_template('login.html', message="Введен неверный никнейм, почта или пароль.", form=form)
+    return render_template('login.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
@@ -53,6 +57,7 @@ def reqister():
             return render_template('register.html', title='Register', form=form,
                                    message="This user already exists")
         user = User(
+            nickname=form.nickname.data,
             name=form.name.data,
             surname=form.surname.data,
             age=form.age.data,
@@ -192,7 +197,7 @@ if __name__ == '__main__':
         print('База данных не найдена - генерируется новая.')
         db_session.global_init("db/alldata.sqlite")
         db_sess = db_session.create_session()
-        rootuser = User(name='Root', surname='User', age='99', email='root@admin.com', level=3)
+        rootuser = User(nickname='Omegame', name='Root', surname='User', age='99', email='root@admin.com', level=3)
         rootuser.set_password('ULTRA_RELIABLE_PASSWORD')
         db_sess.add(rootuser)
         db_sess.commit()

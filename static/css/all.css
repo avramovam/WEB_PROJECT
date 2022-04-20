@@ -75,3 +75,8 @@ a.white.special:hover, a.white:active {
 a.white.noul, a.white.noul:hover, a.white.noul:visited, a.white.noul:active {
     text-decoration: none;
 }
+
+input.form-transparent, input.form-transparent:focus {
+    background: transparent;
+    color: #eee;
+}
