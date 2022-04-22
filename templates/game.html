@@ -32,12 +32,34 @@
                 </div>
             </div>
         </div>
-        <div class="columned-content"> <!-- 2/2: подробности -->
-            <div class="column"> <!-- описание -->
+        <div>
+            <div>
                 {{ desc }}
             </div>
-            <div class="column"> <!-- турниры -->
-
+            <h2 style="margin: 64px 0 0 0">Турниры</h2>
+            <div align="center" style="margin: 32px 0">
+                {% if current_user.is_authenticated %}
+                    <a class="btn btn-success btn-lg" href="/create_tournament?gameid={{ myid }}" role="button">
+                        Начать новый турнир
+                    </a>
+                {% endif %}
+            </div>
+            <div class="tournaments-frame">
+                {% for t in tournaments %}
+                    <div>
+                        <h3>{{ t.name }}</h3>
+                        {{ t.start }} (UTC+0)
+                        {% if now > t.start %} <!-- турнир уже начался -->
+                            {% if not t.state %} <!-- не закончился -->
+                                <div style="color: #dd3">Ещё идет</div>
+                            {% else %} <!-- закончился -->
+                                <div style="color: #d33">Закончился</div>
+                            {% endif %}
+                        {% else %} <!-- не начался -->
+                            <div style="color: #3d3">Ещё не начался</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>

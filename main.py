@@ -5,6 +5,7 @@ from math import floor
 from ntpath import isfile
 from werkzeug.exceptions import NotFound
 
+from datetime import datetime, timezone
 from data import db_session
 from data.db_session import func as sql_funcs
 from data.login_form import LoginForm
@@ -133,7 +134,8 @@ def index():
 @app.route('/search')
 def page_search():
     a_name = request.args.get('name')
-    f_name = (lambda name: a_name in name) if a_name is not None else (lambda name: True)
+    a_name = a_name.lower() if a_name is not None else a_name
+    f_name = (lambda name: a_name in name.lower()) if a_name is not None else (lambda name: True)
     a_tags = request.args.get('tags')
     a_tags = [x.strip().lower() for x in a_tags.split(',')] if a_tags is not None else None
     f_tags = (lambda tags: all(x in tags for x in a_tags)) if a_tags is not None else (lambda tags: True)
@@ -188,7 +190,18 @@ def page_game():
                            steamlink=gamedata.get('url_info', {}).get('url', 'no link'),
                            imgurl=gamedata['img_url'], # ладно, может не единственный...
                            tournaments=tournaments,
+                           now=datetime.now(timezone.utc),
+                           myid=id,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
+                           )
+
+@login_required
+@app.route('/create_tournament')
+def create_tournament():
+    gameid = request.args.get('gameid')
+    if gameid is None:
+        return render_template('whereiam.html') # страница в случае, если id игры не указан
+    return render_template('create_tournament.html',
                            )
 #endregion
 

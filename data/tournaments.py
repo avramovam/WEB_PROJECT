@@ -10,9 +10,10 @@ class Tournaments(SqlAlchemyBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    desc = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     members = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     start = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
-    state = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
+    flags = sqlalchemy.Column(sqlalchemy.Integer, default=0) # см ./about_tournaments.md
     gameid = sqlalchemy.Column(sqlalchemy.Integer, default=0)
 
 

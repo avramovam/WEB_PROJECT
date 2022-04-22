@@ -38,9 +38,17 @@ body {
 }
 
 .reviews-frame {
-    border: solid #ddd;
+    border: solid #999;
     background: rgb(85,85,85);
     background: linear-gradient(180deg, rgba(85,85,85,1) 0%, rgba(0,0,0,1) 100%);
+    padding: 8px;
+}
+
+.tournaments-frame {
+    border: solid #999;
+    background: rgb(85,85,85);
+    background: linear-gradient(180deg, rgba(85,85,85,0.4) 0%, rgba(0,0,0,0.4) 100%);
+    padding: 32px;
 }
 
 .gamecard {
@@ -62,6 +70,10 @@ body {
 
 a.white, a.white:hover, a.white:visited, a.white:active {
     color: #eee;
+}
+
+a.white.itsgray, a.white.itsgray:hover, a.white.itsgray:visited, a.white.itsgray:active {
+    color: #999;
 }
 
 a.white.special, a.white.special:visited {

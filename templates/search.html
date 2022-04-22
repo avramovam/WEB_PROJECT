@@ -11,11 +11,12 @@
         {% for g in games %}
             {% set name = g["name"] %}
             <div class="gamecard">
+                <h1>
+                    <a class="white special" href="/game?gameid={{ g['id'] }}">{{ name }}</a>
                 {% if "url_info" in g and "url" in g['url_info'] %}
-                    <h1><a class="white" href="{{ g['url_info']['url'] }}">{{ name }}</a></h1>
-                {% else %}
-                    <h1>{{ name }}</h1>
+                    <i style="font-size: 50%"><a class="white itsgray" href="{{ g['url_info']['url'] }}">(перейти на страницу в Steam)</a></i>
                 {% endif %}
+                </h1>
                 <div style="margin-right: 10px; float: left">
                     <div style="border: solid #333; background: #555; width: 400px; display: inline-block;" align="left">
                         {% if "img_url" in g %}
