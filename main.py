@@ -1,6 +1,6 @@
 import sqlite3
 
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
 from ntpath import isfile
@@ -11,6 +11,8 @@ from data.users import User
 from data.tournaments import Tournaments
 from data.register import RegisterForm
 import json
+import cgi
+import cgitb
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -75,8 +77,27 @@ def logout():
 def profile(id):
     con = sqlite3.connect("db/alldata.sqlite")
     cur = con.cursor()
-    result = cur.execute(f"""SELECT name, surname, email, age FROM users WHERE id={id}""").fetchall()[0]
-    return render_template("admin.html", name=result[0], surname=result[1], email=result[2], age=result[3])
+    result = cur.execute(f"""SELECT name, surname, email, age, favourite FROM users WHERE id={id}""").fetchall()[0]
+    if 'http://127.0.0.1:8080/game?gameid' in request.referrer:
+        previous = request.referrer
+        game_id = int(previous[previous.find('gameid=')+7:])
+        gamedata = games[game_id]
+        fav = result[4]
+        if result[4] is None:
+            fav = str(game_id) + ','
+        elif str(game_id) in fav:
+            pass
+        else:
+            fav += f'{game_id},'
+        cur.execute(f"""UPDATE users SET favourite = (? ) WHERE id = (? )""", (fav, id))
+        con.commit()
+    spis_of_games = {}
+    new_result = cur.execute(f"""SELECT favourite FROM users WHERE id={id}""").fetchall()[0] # если пользователь переходит со страницы игры
+    for i in new_result[0].split(',')[:-1]:
+        gamedata = games[int(i)]
+        spis_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
+    return render_template("admin.html", name=result[0], surname=result[1], email=result[2], age=result[3],
+                           games=spis_of_games)
 
 
 @app.route('/profile_edit/id=<int:id>', methods=['GET', 'POST'])

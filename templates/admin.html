@@ -6,15 +6,17 @@
     <h1>Личный кабинет</h1>
 </div>
 <body>
-<img src="https://www.vtp-club.ru/img/user.png" width="200" alt="photo">
+<img src="https://gamebomb.ru/files/galleries/001/1/10/110539.jpg" width="250" height="200" alt="Фото">
 <h1>{{ name }} {{ surname}}</h1>
 <p>Возраст: {{ age }}</p>
 <hr>
 <h2>Мой email: {{ email }}</h2>
 <h2>Любимые игры: </h2>
-<ol>
-    <li> {в разработке} </li>
-</ol>
+<ul>
+    {% for i in games %}
+    <li><a href="{{ games[i] }}">{{ i }}</a></li>
+    {% endfor %}
+    </ul>
 <h2>Текущие турниры</h2>
 <table>
     <tr>
