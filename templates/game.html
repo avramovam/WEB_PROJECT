@@ -49,7 +49,7 @@
                     <div>
                         <h3>{{ t.name }}</h3>
                         {{ t.start }} (UTC+0)
-                        {% if now > t.start %} <!-- турнир уже начался -->
+                        {% if now.timestamp() > t.start.timestamp() %} <!-- турнир уже начался -->
                             {% if not t.state %} <!-- не закончился -->
                                 <div style="color: #dd3">Ещё идет</div>
                             {% else %} <!-- закончился -->

@@ -5,13 +5,14 @@ from math import floor
 from ntpath import isfile
 from werkzeug.exceptions import NotFound
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from data import db_session
 from data.db_session import func as sql_funcs
 from data.login_form import LoginForm
 from data.users import User
-from data.tournaments import Tournaments
+from data.tournaments import Tournament
 from data.register import RegisterForm
+from data.create_tournament_form import TournamentForm
 import json
 
 app = Flask(__name__)
@@ -53,10 +54,11 @@ def reqister():
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Register', form=form,
-                                   message="Passwords don't match")
-        if db_sess.query(User).filter(User.email == form.email.data).first():
+                                   message="Пароль не соответсвует повторённому паролю")
+        if (bool(db_sess.query(User).filter(User.email == form.email.data).first()) or
+            bool(db_sess.query(User).filter(User.nickname == form.nickname.data).first())):
             return render_template('register.html', title='Register', form=form,
-                                   message="This user already exists")
+                                   message="Пользователь с таким ником или почтой уже есть")
         user = User(
             nickname=form.nickname.data,
             name=form.name.data,
@@ -178,7 +180,7 @@ def page_game():
         if id is None: # даже id нет
             redirect('/', 301) # возвращаемся домой
     gamedata = games[id]
-    tournaments = db_sess.query(Tournaments).filter(Tournaments.gameid == id).all()
+    tournaments = db_sess.query(Tournament).filter(Tournament.gameid == id).all()
     print(tournaments)
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
@@ -194,15 +196,49 @@ def page_game():
                            myid=id,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )
+#endregion
 
+#region [ТУРНИРЫ]
 @login_required
-@app.route('/create_tournament')
+@app.route('/create_tournament', methods=['GET', 'POST'])
 def create_tournament():
     gameid = request.args.get('gameid')
-    if gameid is None:
+    if (gameid is None) or (not gameid.isdigit()):
         return render_template('whereiam.html') # страница в случае, если id игры не указан
+    gameid = int(gameid)
+    form = TournamentForm()
+    if form.validate_on_submit():
+        tournament = Tournament(name=form.name.data,
+                                desc=form.desc.data,
+                                author=session['_user_id'],
+                                contacts=form.contacts.data,
+                                members='',
+                                start=form.start.data,
+                                flags=(2*form.show.data),
+                                gameid=gameid,
+                                )
+        db_sess.add(tournament)
+        db_sess.commit()
+        return redirect(f'/tournament?id={tournament.id}')
+
     return render_template('create_tournament.html',
+                           name=games[gameid]['name'],
+                           gameid=gameid,
+                           form=form,
                            )
+
+@app.route('/tournament')
+def tournament():
+    id = request.args.get('id')
+    if (id is None) or (not id.isdigit()):
+        return render_template('whereiam.html')  # страница в случае, если id турнира не указан
+    id = int(id)
+    tournament_data = db_sess.query(Tournament).filter(Tournament.id == id).first()
+    if not tournament_data:
+        return render_template('whereiam.html')  # страница в случае, если id турнира неверен
+    return render_template('tournament.html',
+                           tourdata=tournament_data,
+                           gamedata=games[tournament_data.gameid])
 #endregion
 
 if __name__ == '__main__':

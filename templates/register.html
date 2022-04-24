@@ -22,7 +22,7 @@
             <h3>{{ form.nickname.label }}</h3>
             <div>Ваш никнейм – псевдоним, который будем виден всем. пользователям на сайте.</div>
             {{ form.nickname(class="form-control form-transparent") }}<br>
-            {% for error in form.errors %}
+            {% for error in form.nickname.errors %}
                 <p class="alert alert-danger" role="alert">
                     {{ error }}
                 </p>

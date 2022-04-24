@@ -1,0 +1,14 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - {{ name }}</title>
+{% endblock %}
+
+{% block body %}
+    <div style="font-family: Montserrat">
+        <h1 style="display: inline">{{ tourdata.name }}</h1>
+        <div style="display: inline; font-style: italic; color: rgba(255, 255, 255, 0.4)">#{{ tourdata.id }}</div>
+        <h2>По игре <a class="white special" style="color: #6ae" href="/game?gameid={{ tourdata.gameid }}">{{ gamedata['name'] }}</a></h2>
+    </div>
+
+{% endblock %}
