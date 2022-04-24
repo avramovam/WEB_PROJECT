@@ -11,8 +11,9 @@ from data.users import User
 from data.tournaments import Tournaments
 from data.register import RegisterForm
 import json
-import cgi
-import cgitb
+from dotenv import load_dotenv
+from mail_sender import send_email
+from random import randint
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -58,7 +59,7 @@ def reqister():
             surname=form.surname.data,
             age=form.age.data,
             email=form.email.data,
-            level=0,
+            level=1,
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -75,9 +76,11 @@ def logout():
 @app.route('/user/id=<int:id>', methods=['GET', 'POST'])
 @login_required
 def profile(id):
+    global id_
+    id_ = id
     con = sqlite3.connect("db/alldata.sqlite")
     cur = con.cursor()
-    result = cur.execute(f"""SELECT name, surname, email, age, favourite FROM users WHERE id={id}""").fetchall()[0]
+    result = cur.execute(f"""SELECT name, surname, email, age, favourite, level FROM users WHERE id={id}""").fetchall()[0]
     if 'http://127.0.0.1:8080/game?gameid' in request.referrer:
         previous = request.referrer
         game_id = int(previous[previous.find('gameid=')+7:])
@@ -97,8 +100,42 @@ def profile(id):
         gamedata = games[int(i)]
         spis_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
     return render_template("admin.html", name=result[0], surname=result[1], email=result[2], age=result[3],
-                           games=spis_of_games)
+                           games=spis_of_games, level_profile=int(result[5]))
 
+load_dotenv()
+@app.route('/mail', methods=['GET'])
+def get_form():
+    return render_template('mail_me.html')
+
+
+@app.route('/mail', methods=['POST'])
+def post_form():
+    email = request.values.get('email')
+    global confirm_pass
+    confirm_pass = randint(100000, 999999)
+    if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
+        return redirect('/confirm_profile')
+    else:
+        return f'Во время отправки на адрес {email} произошла ошибка'
+
+load_dotenv()
+@app.route('/confirm_profile', methods=['GET'])
+def get_conf():
+    return render_template('confirm_profile.html')
+
+@app.route('/confirm_profile', methods=['POST'])
+def confirm_profile():
+    passw = request.values.get('password')
+    print(passw)
+    print(confirm_pass)
+    if str(passw) == str(confirm_pass):
+        con = sqlite3.connect("db/alldata.sqlite")
+        cur = con.cursor()
+        cur.execute(f"""UPDATE users SET level = (? ) WHERE id = (? )""", (1, id_))
+        con.commit()
+        return redirect(f'/profile/id=<int:{id_}>')
+    else:
+        return 'error'
 
 @app.route('/profile_edit/id=<int:id>', methods=['GET', 'POST'])
 @login_required
