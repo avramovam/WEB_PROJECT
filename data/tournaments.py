@@ -12,7 +12,7 @@ class Tournament(SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     desc = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey(User.id), nullable=True)
+    author = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     contacts = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     members = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     start = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())

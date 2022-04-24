@@ -192,7 +192,7 @@ def page_game():
                            steamlink=gamedata.get('url_info', {}).get('url', 'no link'),
                            imgurl=gamedata['img_url'], # ладно, может не единственный...
                            tournaments=tournaments,
-                           now=datetime.now(timezone.utc),
+                           now=datetime.utcnow(),
                            myid=id,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )

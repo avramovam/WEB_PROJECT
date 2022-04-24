@@ -47,7 +47,7 @@
             <div class="tournaments-frame">
                 {% for t in tournaments %}
                     <div>
-                        <h3>{{ t.name }}</h3>
+                        <h3><a class="white" href="/tournament?id={{ t.id }}">{{ t.name }}</a></h3>
                         {{ t.start }} (UTC+0)
                         {% if now.timestamp() > t.start.timestamp() %} <!-- турнир уже начался -->
                             {% if not t.state %} <!-- не закончился -->
