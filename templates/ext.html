@@ -9,10 +9,10 @@
                     <ul class="navbar-nav">
                         <li class="navbar-item">
                             <a class="white special" style="font-size: 125%; display: block; text-align: right"
-                               href="/user/id={{ current_user.id }}">{{ current_user.nickname }}</a>
-                            {% if current_user.level > 0 %}
-                                {% if current_user.level == 1 %}
-                                    <div style="color: #ad2; font-size: 80%; display: inline; font-style: italic">Модератор</div>
+                               href="/user?id={{ current_user.id }}">{{ current_user.nickname }}</a>
+                            {% if current_user.level != 1 %}
+                                {% if current_user.level == 0 %}
+                                    <div style="color: #d66; font-size: 80%; display: inline; font-style: italic">Неподтвержденный аккаунт</div>
                                 {% elif current_user.level == 2 %}
                                     <div style="color: #2bd; font-size: 80%; display: inline; font-style: italic">Админ</div>
                                 {% elif current_user.level == 3 %}

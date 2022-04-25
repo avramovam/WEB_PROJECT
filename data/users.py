@@ -18,7 +18,8 @@ class User(SqlAlchemyBase, UserMixin):
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modifed_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     level = sqlalchemy.Column(sqlalchemy.SmallInteger, default=0)
-    favourite = sqlalchemy.Column(sqlalchemy.String)
+    favourite = sqlalchemy.Column(sqlalchemy.String, default='')
+    confirm_code = sqlalchemy.Column(sqlalchemy.Integer, default=0)
 
 
     def __repr__(self):

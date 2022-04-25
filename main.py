@@ -1,7 +1,8 @@
 import sqlite3
 
 import requests
-from flask import Flask, render_template, request, redirect, url_for
+import sqlalchemy
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
 from ntpath import isfile
@@ -23,6 +24,11 @@ import urllib
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
+#region [ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ]
+def get_current_user() -> User:
+    return db_sess.query(User).filter(User.id == int(session['_user_id'])).first()
+#endregion
 
 #region [ОБРАБОТКА ОШИБОК]
 @app.errorhandler(404)
@@ -71,8 +77,9 @@ def reqister():
             surname=form.surname.data,
             age=form.age.data,
             email=form.email.data,
-            level=1,
+            level=0,
         )
+
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -97,68 +104,69 @@ def profile():
     if not (1 <= id <= db_sess.query(sql_funcs.max(User.id)).first()[0]):
         return e404(NotFound)
     user = db_sess.query(User).filter(User.id == id).first()
-    return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age)
-def profile(id):
-    global id_
-    id_ = id
-    con = sqlite3.connect("db/alldata.sqlite")
-    cur = con.cursor()
-    result = cur.execute(f"""SELECT name, surname, email, age, favourite, level FROM users WHERE id={id}""").fetchall()[0]
-    if 'http://127.0.0.1:8080/game?gameid' in request.referrer:
+    if '/game?gameid' in request.referrer:
         previous = request.referrer
         game_id = int(previous[previous.find('gameid=')+7:])
         gamedata = games[game_id]
-        fav = result[4]
-        if result[4] is None:
+        fav = user.favourite
+        if fav is None:
             fav = str(game_id) + ','
         elif str(game_id) in fav:
             pass
         else:
             fav += f'{game_id},'
-        cur.execute(f"""UPDATE users SET favourite = (? ) WHERE id = (? )""", (fav, id))
-        con.commit()
-    spis_of_games = {}
-    new_result = cur.execute(f"""SELECT favourite FROM users WHERE id={id}""").fetchall()[0] # если пользователь переходит со страницы игры
-    for i in new_result[0].split(',')[:-1]:
+        db_sess.execute(
+            sqlalchemy.update(User)
+                .where(User.id == id)
+                .values(favourite=fav)
+        )
+        db_sess.commit()
+    list_of_games = {}
+    new_result = db_sess.query(User).filter(User.id == id).first().favourite # если пользователь переходит со страницы игры
+    for i in new_result.split(',')[:-1]:
         gamedata = games[int(i)]
-        spis_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
-    return render_template("admin.html", name=result[0], surname=result[1], email=result[2], age=result[3],
-                           games=spis_of_games, level_profile=int(result[5]))
+        list_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
+    return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age,
+                           games=list_of_games, level_profile=user.level)
 
 load_dotenv()
-@app.route('/mail', methods=['GET'])
-def get_form():
-    return render_template('mail_me.html')
-
-
-@app.route('/mail', methods=['POST'])
-def post_form():
-    email = request.values.get('email')
-    global confirm_pass
-    confirm_pass = randint(100000, 999999)
-    try:
-        if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
-            return redirect('/confirm_profile')
-    except Exception as E:
-        return f'Во время отправки на адрес {email} произошла ошибка'
-
-load_dotenv()
-@app.route('/confirm_profile', methods=['GET'])
-def get_conf():
-    return render_template('confirm_profile.html')
-
-@app.route('/confirm_profile', methods=['POST'])
-def confirm_profile():
-    passw = request.values.get('password')
-    if str(passw) == str(confirm_pass):
-        con = sqlite3.connect("db/alldata.sqlite")
-        cur = con.cursor()
-        cur.execute(f"""UPDATE users SET level = (? ) WHERE id = (? )""", (1, id_))
-        con.commit()
-        return redirect(f'/')
+@app.route('/mail', methods=['GET', 'POST'])
+def mail_form():
+    if request.method == 'GET':
+        return render_template('mail_me.html')
     else:
-        return 'error'
+        email = request.values.get('email')
+        #global confirm_pass
+        confirm_pass = randint(100000, 999999)
+        db_sess.execute(
+            sqlalchemy.update(User)
+            .where(User.id == int(session['_user_id']))
+            .values(confirm_code=confirm_pass)
+        )
+        db_sess.commit()
+        try:
+            if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
+                return redirect('/confirm_profile')
+        except Exception as E:
+            return f'Во время отправки на адрес {email} произошла ошибка'
 
+load_dotenv()
+@app.route('/confirm_profile', methods=['GET', 'POST'])
+def confirm_profile():
+    if request.method == 'GET':
+        return render_template('confirm_profile.html')
+    else:
+        passw = request.values.get('password')
+        if str(passw) == str(get_current_user().confirm_code):
+            db_sess.execute(
+                sqlalchemy.update(User)
+                    .where(User.id == int(session['_user_id']))
+                    .values(level=1)
+            )
+            db_sess.commit()
+            return redirect('/')
+        else:
+            return 'error'
 
 @app.route('/profile_edit', methods=['GET', 'POST'])
 @login_required
@@ -168,8 +176,8 @@ def profile_edit():
     if request.method == 'POST':
         f = request.values.get('image')
         print(f)
-    if request.method == "GET":
-        users = db_sess.query(User).filter(User.id == id).first()
+    else:
+        users = get_current_user()
         if users:
             form.email.data = users.email
             form.password.data = users.hashed_password
