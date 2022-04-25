@@ -50,7 +50,7 @@
                         <h3><a class="white" href="/tournament?id={{ t.id }}">{{ t.name }}</a></h3>
                         {{ t.start }} (UTC+0)
                         {% if now.timestamp() > t.start.timestamp() %} <!-- турнир уже начался -->
-                            {% if not t.state %} <!-- не закончился -->
+                            {% if (t.flags % 2) == 0 %} <!-- не закончился -->
                                 <div style="color: #dd3">Ещё идет</div>
                             {% else %} <!-- закончился -->
                                 <div style="color: #d33">Закончился</div>
@@ -64,7 +64,8 @@
         </div>
 
         <form action="/">
-            <a class="back_button" href="javascript:history.back()">Back</a>  <a class="back_button" href="/user/id={{ current_user.id }}">Like</a>
+            <a class="back_button" href="javascript:history.back()">Назад</a>
+            <a class="back_button" href="/user?id={{ current_user.id }}">Добавить</a>
         </form>
     </div>
 

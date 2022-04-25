@@ -14,7 +14,7 @@ class Tournament(SqlAlchemyBase):
     desc = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     author = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     contacts = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    members = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    members = sqlalchemy.Column(sqlalchemy.String, default='')
     start = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
     flags = sqlalchemy.Column(sqlalchemy.Integer, default=0) # см ./about_tournaments.md
     gameid = sqlalchemy.Column(sqlalchemy.Integer, default=0)

@@ -121,11 +121,13 @@ def profile():
                 .values(favourite=fav)
         )
         db_sess.commit()
-    list_of_games = {}
+    list_of_games = []
     new_result = db_sess.query(User).filter(User.id == id).first().favourite # если пользователь переходит со страницы игры
     for i in new_result.split(',')[:-1]:
-        gamedata = games[int(i)]
-        list_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
+        gameid = int(i)
+        list_of_games.append([gameid, games[gameid]['name']])
+        #gamedata = games[int(i)]
+        #list_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
     return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age,
                            games=list_of_games, level_profile=user.level)
 
@@ -304,7 +306,7 @@ def create_tournament():
                            form=form,
                            )
 
-@app.route('/tournament')
+@app.route('/tournament', methods=['GET', 'POST'])
 def tournament():
     id = request.args.get('id')
     if (id is None) or (not id.isdigit()):
@@ -313,9 +315,27 @@ def tournament():
     tournament_data = db_sess.query(Tournament).filter(Tournament.id == id).first()
     if not tournament_data:
         return render_template('whereiam.html')  # страница в случае, если id турнира неверен
-    return render_template('tournament.html',
-                           tourdata=tournament_data,
-                           gamedata=games[tournament_data.gameid])
+    if request.method == 'GET':
+        lst = []
+        if tournament_data.members != '':
+            for t in tournament_data.members.split(','):
+                i = int(t.strip())
+                u = db_sess.query(User).filter(User.id == i).first()
+                lst.append((i, u.nickname))
+        return render_template('tournament.html',
+                               tourdata=tournament_data,
+                               now=datetime.utcnow(),
+                               participants=lst,
+                               gamedata=games[tournament_data.gameid])
+    else:
+        if get_current_user().id == tournament_data.author:
+            db_sess.execute(
+                sqlalchemy.update(Tournament)
+                    .where(Tournament.id == id)
+                    .values(flags=(tournament_data.flags | (1<<0)))
+            )
+            db_sess.commit()
+        return redirect(f'/tournament?id={id}')
 #endregion
 
 if __name__ == '__main__':

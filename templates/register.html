@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "ext.html" %}
 
 {% block head %}
     <title>Omegame - Регистрация</title>
@@ -32,9 +32,6 @@
             <h3>{{ form.email.label }}</h3>
             <div>
                 Мы свяжемся с вами через email чтобы подтвердить ваш аккаунт.
-                <div style="display: inline; color: rgba(238, 238, 238, 0.5)">
-                    (на самом деле мы пока так не умеем)
-                </div>
             </div>
             {{ form.email(class="form-control form-transparent", type="email") }}<br>
             {% for error in form.email.errors %}

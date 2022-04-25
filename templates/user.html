@@ -1,46 +1,45 @@
 {% extends "ext.html" %}
 
 {% block head %}
-<title>Omegame - {{ name }} {{ surname }}</title>
+    <title>Omegame - {{ name }} {{ surname }}</title>
 {% endblock %}
 
 {% block body %}
-<div class="text-center">
-    <h1>Личный кабинет</h1>
-</div>
-<body>
-<img src="https://gamebomb.ru/files/galleries/001/1/10/110539.jpg" width="250" height="200" alt="Фото">
-<h1>{{ name }} {{ surname }}</h1>
-<p>Возраст: {{ age }}</p>
-{% if level_profile == 0 %}
-    <a href="/mail">Учетная запись не подтверждена</a>
-{% else %}
-    <p>Подтвержденная учетная запись</p>
-{% endif %}
-<hr>
-<h2>Мой email: {{ email }}</h2>
-<h2>Любимые игры: </h2>
-<ul>
-    {% for i in games %}
-    <li><a href="{{ games[i] }}">{{ i }}</a></li>
-    {% endfor %}
-    </ul>
-<h2>Текущие турниры</h2>
-<table>
-    <tr>
-        <th>Название турнира  </th>
-        <th>Дата начала  </th>
-        <th>Текущий статус  </th>
-    </tr>
-</table>
-
-{% if id != 0 %}
+<div style="font-family: Montserrat">
+    <div class="text-center">
+        <h1>Личный кабинет</h1>
+    </div>
+    <img src="https://gamebomb.ru/files/galleries/001/1/10/110539.jpg" width="250" height="200" alt="Фото">
+    <h1>{{ name }} {{ surname }}</h1>
+    <p>Возраст: {{ age }}</p>
+    {% if level_profile == 0 %}
+        <a href="/mail">Учетная запись не подтверждена</a>
+    {% else %}
+        <p>Подтвержденная учетная запись</p>
+    {% endif %}
+    <hr>
+    <h2>Мой email: {{ email }}</h2>
+    <h2>Любимые игры: </h2>
+    <ul>
+        {% for i in games %}
+        <li><a href="/game?gameid={{ i[0] }}">{{ i[1] }}</a></li>
+        {% endfor %}
+        </ul>
+    <h2>Текущие турниры</h2>
+    <table>
+        <tr>
+            <th>Название турнира</th>
+            <th>Дата начала</th>
+            <th>Текущий статус</th>
+        </tr>
+    </table>
+    {% if id != 0 %}
         <br>
-        <a href="/profile_edit"> Изменить </a>
-        {% endif %}
-<h1></h1>
-<form action="/">
-      <a class="back_button" href="/">Back</a>
-</form>
-</body>
+        <a href="/profile_edit">Изменить</a>
+    {% endif %}
+    <h1></h1>
+    <form action="/">
+        <a class="back_button" href="/">Back</a>
+    </form>
+</div>
 {% endblock %}
