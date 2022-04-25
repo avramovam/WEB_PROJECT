@@ -1,5 +1,6 @@
 import sqlite3
 
+import requests
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
@@ -14,6 +15,7 @@ import json
 from dotenv import load_dotenv
 from mail_sender import send_email
 from random import randint
+import urllib
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -113,9 +115,10 @@ def post_form():
     email = request.values.get('email')
     global confirm_pass
     confirm_pass = randint(100000, 999999)
-    if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
-        return redirect('/confirm_profile')
-    else:
+    try:
+        if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
+            return redirect('/confirm_profile')
+    except Exception as E:
         return f'Во время отправки на адрес {email} произошла ошибка'
 
 load_dotenv()
@@ -126,14 +129,12 @@ def get_conf():
 @app.route('/confirm_profile', methods=['POST'])
 def confirm_profile():
     passw = request.values.get('password')
-    print(passw)
-    print(confirm_pass)
     if str(passw) == str(confirm_pass):
         con = sqlite3.connect("db/alldata.sqlite")
         cur = con.cursor()
         cur.execute(f"""UPDATE users SET level = (? ) WHERE id = (? )""", (1, id_))
         con.commit()
-        return redirect(f'/profile/id=<int:{id_}>')
+        return redirect(f'/')
     else:
         return 'error'
 
@@ -141,6 +142,9 @@ def confirm_profile():
 @login_required
 def profile_edit(id):
     form = RegisterForm()
+    if request.method == 'POST':
+        f = request.values.get('image')
+        print(f)
     if request.method == "GET":
         db_sess = db_session.create_session()
         users = db_sess.query(User).filter(User.id == id).first()
