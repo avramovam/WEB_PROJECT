@@ -87,6 +87,14 @@ a.white.special:hover, a.white:active {
 a.white.noul, a.white.noul:hover, a.white.noul:visited, a.white.noul:active {
     text-decoration: none;
 }
+.back_button{appearance: none;
+  border: 0;
+  border-radius: 5px;
+  background: #4676D7;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 16px;
+ }
 
 input.form-transparent, input.form-transparent:focus {
     background: transparent;

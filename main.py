@@ -1,5 +1,7 @@
-#import data.db_session
-from flask import Flask, render_template, request, redirect, session
+import sqlite3
+
+import requests
+from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
 from ntpath import isfile
@@ -14,6 +16,10 @@ from data.tournaments import Tournament
 from data.register import RegisterForm
 from data.create_tournament_form import TournamentForm
 import json
+from dotenv import load_dotenv
+from mail_sender import send_email
+from random import randint
+import urllib
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -65,7 +71,7 @@ def reqister():
             surname=form.surname.data,
             age=form.age.data,
             email=form.email.data,
-            level=0,
+            level=1,
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -92,6 +98,66 @@ def profile():
         return e404(NotFound)
     user = db_sess.query(User).filter(User.id == id).first()
     return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age)
+def profile(id):
+    global id_
+    id_ = id
+    con = sqlite3.connect("db/alldata.sqlite")
+    cur = con.cursor()
+    result = cur.execute(f"""SELECT name, surname, email, age, favourite, level FROM users WHERE id={id}""").fetchall()[0]
+    if 'http://127.0.0.1:8080/game?gameid' in request.referrer:
+        previous = request.referrer
+        game_id = int(previous[previous.find('gameid=')+7:])
+        gamedata = games[game_id]
+        fav = result[4]
+        if result[4] is None:
+            fav = str(game_id) + ','
+        elif str(game_id) in fav:
+            pass
+        else:
+            fav += f'{game_id},'
+        cur.execute(f"""UPDATE users SET favourite = (? ) WHERE id = (? )""", (fav, id))
+        con.commit()
+    spis_of_games = {}
+    new_result = cur.execute(f"""SELECT favourite FROM users WHERE id={id}""").fetchall()[0] # если пользователь переходит со страницы игры
+    for i in new_result[0].split(',')[:-1]:
+        gamedata = games[int(i)]
+        spis_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
+    return render_template("admin.html", name=result[0], surname=result[1], email=result[2], age=result[3],
+                           games=spis_of_games, level_profile=int(result[5]))
+
+load_dotenv()
+@app.route('/mail', methods=['GET'])
+def get_form():
+    return render_template('mail_me.html')
+
+
+@app.route('/mail', methods=['POST'])
+def post_form():
+    email = request.values.get('email')
+    global confirm_pass
+    confirm_pass = randint(100000, 999999)
+    try:
+        if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
+            return redirect('/confirm_profile')
+    except Exception as E:
+        return f'Во время отправки на адрес {email} произошла ошибка'
+
+load_dotenv()
+@app.route('/confirm_profile', methods=['GET'])
+def get_conf():
+    return render_template('confirm_profile.html')
+
+@app.route('/confirm_profile', methods=['POST'])
+def confirm_profile():
+    passw = request.values.get('password')
+    if str(passw) == str(confirm_pass):
+        con = sqlite3.connect("db/alldata.sqlite")
+        cur = con.cursor()
+        cur.execute(f"""UPDATE users SET level = (? ) WHERE id = (? )""", (1, id_))
+        con.commit()
+        return redirect(f'/')
+    else:
+        return 'error'
 
 
 @app.route('/profile_edit', methods=['GET', 'POST'])
@@ -99,6 +165,9 @@ def profile():
 def profile_edit():
     id = int(session['_user_id'])
     form = RegisterForm()
+    if request.method == 'POST':
+        f = request.values.get('image')
+        print(f)
     if request.method == "GET":
         users = db_sess.query(User).filter(User.id == id).first()
         if users:
