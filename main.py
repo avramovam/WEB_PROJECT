@@ -123,13 +123,14 @@ def profile():
         db_sess.commit()
     list_of_games = []
     new_result = db_sess.query(User).filter(User.id == id).first().favourite # если пользователь переходит со страницы игры
+    tournaments = db_sess.query(Tournament).filter(Tournament.members.like(f'%{user.id}%')).all()
     for i in new_result.split(',')[:-1]:
         gameid = int(i)
         list_of_games.append([gameid, games[gameid]['name']])
         #gamedata = games[int(i)]
         #list_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
     return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age,
-                           games=list_of_games, level_profile=user.level)
+                           games=list_of_games, level_profile=user.level, tournaments=tournaments)
 
 load_dotenv()
 @app.route('/mail', methods=['GET', 'POST'])
