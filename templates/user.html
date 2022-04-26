@@ -30,15 +30,13 @@
         <tr>
             <th>Название турнира</th>
             <th>Дата начала</th>
-            <th>Контакты</th>
             <th>Текущий статус</th>
         </tr>
         {% for i in tournaments %}
         <tr>
             <th>{{ i.name }}</th>
             <th>{{ i.start }}</th>
-            <th>{{ i.contacts }}</th>
-            {% if i.flag == 1 %}} <!-- исправить позже -->
+            {% if (i.flags % 2) == 1 %}
             <th>Закончился</th>
             {% else %}
             <th>Идет</th>
