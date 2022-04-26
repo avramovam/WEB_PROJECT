@@ -15,6 +15,7 @@ from data.login_form import LoginForm
 from data.users import User
 from data.tournaments import Tournament
 from data.register import RegisterForm
+from data.review_form import ReviewForm
 from data.create_tournament_form import TournamentForm
 import json
 from dotenv import load_dotenv
@@ -336,6 +337,25 @@ def tournament():
             )
             db_sess.commit()
         return redirect(f'/tournament?id={id}')
+#endregion
+
+#region [РЕЦЕНЗИИ]
+@login_required
+@app.route('/create_review', method=['GET', 'POST'])
+def create_review():
+    gameid = request.args.get('gameid')
+    if (gameid is None) or (not gameid.isdigit()):
+        return render_template('whereiam.html') # страница в случае, если id игры не указан
+    gameid = int(gameid)
+    form = ReviewForm()
+    if form.validate_on_submit():
+        return redirect(f'/review?id={0}')#review.id}')
+
+    return render_template('create_review.html',
+                           name=games[gameid]['name'],
+                           gameid=gameid,
+                           form=form,
+                           )
 #endregion
 
 if __name__ == '__main__':
