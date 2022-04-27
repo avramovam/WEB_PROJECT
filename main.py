@@ -129,7 +129,7 @@ def profile():
         list_of_games.append([gameid, games[gameid]['name']])
         #gamedata = games[int(i)]
         #list_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
-    return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age,
+    return render_template("user.html", nickname=user.nickname, name=user.name, surname=user.surname, email=user.email, age=user.age,
                            games=list_of_games, level_profile=user.level, tournaments=tournaments)
 
 load_dotenv()
@@ -176,12 +176,14 @@ def confirm_profile():
 def profile_edit():
     id = int(session['_user_id'])
     form = RegisterForm()
-    if request.method == 'POST':
-        f = request.values.get('image')
-        print(f)
-    else:
+    # if request.method == 'POST':
+    #     file = request.files['file']
+    #     img = file.read()
+    #     print(file.filename)
+    if request.method == 'GET':
         users = get_current_user()
         if users:
+            form.nickname.data = users.nickname
             form.email.data = users.email
             form.password.data = users.hashed_password
             form.password_again.data = users.hashed_password
@@ -193,6 +195,7 @@ def profile_edit():
     if form.validate_on_submit():
         users = db_sess.query(User).filter(User.id == id).first()
         if users:
+            users.nickname = form.nickname.data
             users.email = form.email.data
             users.password = form.password.data
             users.password_again = form.password.data
@@ -200,7 +203,7 @@ def profile_edit():
             users.surname = form.surname.data
             users.age = form.age.data
             db_sess.commit()
-            return redirect('/')
+            return redirect(f'/user?id={id}')
         else:
             e404(404)
     return render_template('profile_edit.html', form=form)

@@ -10,8 +10,17 @@
         {{ form.hidden_tag() }}
         {{ form.csrf_token }}
         <img src="https://www.vtp-club.ru/img/user.png" width="200" alt="photo">
-    <input type="file"  name="image" id="image" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"/>
-    <p>
+    <!-- <input type="file"  name="image" id="image" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"/> -->
+        <p>
+            {{ form.nickname.label }}<br>
+            {{ form.nickname(class="form-control form-transparent") }}<br>
+            {% for error in form.nickname.errors %}
+        <p class="alert alert-danger" role="alert">
+            {{ error }}
+        </p>
+        {% endfor %}
+        </p>
+        <p>
             {{ form.email.label }}<br>
             {{ form.email(class="form-control form-transparent", type="email") }}<br>
             {% for error in form.email.errors %}
@@ -64,7 +73,6 @@
             {{ error }}
         </p>
         {% endfor %}
-        </p>
         <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
         {{message}}
     </form>

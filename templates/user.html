@@ -9,8 +9,9 @@
     <div class="text-center">
         <h1>Личный кабинет</h1>
     </div>
+    <h1>{{ nickname }}</h1>
     <img src="https://gamebomb.ru/files/galleries/001/1/10/110539.jpg" width="250" height="200" alt="Фото">
-    <h1>{{ name }} {{ surname }}</h1>
+    <h2>{{ name }} {{ surname }}</h2>
     <p>Возраст: {{ age }}</p>
     {% if level_profile == 0 %}
         <a href="/mail">Учетная запись не подтверждена</a>
