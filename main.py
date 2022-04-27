@@ -190,16 +190,26 @@ def profile_edit():
             e404(404)
     if form.validate_on_submit():
         users = db_sess.query(User).filter(User.id == id).first()
+        db_sess.execute(
+            sqlalchemy.update(User)
+                .where(User.id == id)
+                .values(nickname='', email='')
+        )
+        db_sess.commit()
         if users:
-            users.nickname = form.nickname.data
-            users.email = form.email.data
-            users.password = form.password.data
-            users.password_again = form.password.data
-            users.name = form.name.data
-            users.surname = form.surname.data
-            users.age = form.age.data
-            db_sess.commit()
-            return redirect(f'/user?id={id}')
+            if (bool(db_sess.query(User).filter(User.email == form.email.data).first()) or
+                    bool(db_sess.query(User).filter(User.nickname == form.nickname.data).first())):
+                return render_template('profile_edit.html', form=form, message='Пользователь с таким ником или почтой уже есть')
+            else:
+                users.nickname = form.nickname.data
+                users.email = form.email.data
+                users.password = form.password.data
+                users.password_again = form.password.data
+                users.name = form.name.data
+                users.surname = form.surname.data
+                users.age = form.age.data
+                db_sess.commit()
+                return redirect(f'/user?id={id}')
         else:
             e404(404)
     return render_template('profile_edit.html', form=form)
