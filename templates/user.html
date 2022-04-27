@@ -7,9 +7,10 @@
 {% block body %}
 <div style="font-family: Montserrat">
     <div class="text-center">
-        <h1>Личный кабинет</h1>
+        <h1>Личный кабинет пользователя {{ nickname }}</h1>
     </div>
-    <img src="{{ url_for('static', filename='images/default_image.png') }}" width="300" height="300" alt="Фото профиля">
+    <img src="{{ url_for('static', filename='images/default_image.png') }}" align="right"
+         width="300" height="300" alt="Фото профиля">
     <h1>{{ name }} {{ surname }}</h1>
     <p>Возраст: {{ age }}</p>
     {% if level_profile == 0 %}

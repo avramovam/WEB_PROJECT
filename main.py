@@ -106,7 +106,7 @@ def profile():
     if not (1 <= id <= db_sess.query(sql_funcs.max(User.id)).first()[0]):
         return e404(NotFound)
     user = db_sess.query(User).filter(User.id == id).first()
-    if '/game?gameid' in request.referrer:
+    if (request.referrer is not None) and ('/game?gameid' in request.referrer):
         previous = request.referrer
         game_id = int(previous[previous.find('gameid=')+7:])
         gamedata = games[game_id]
@@ -132,7 +132,8 @@ def profile():
         #gamedata = games[int(i)]
         #list_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
     return render_template("user.html", name=user.name, surname=user.surname, email=user.email, age=user.age,
-                           games=list_of_games, level_profile=user.level, tournaments=tournaments)
+                           games=list_of_games, level_profile=user.level, tournaments=tournaments,
+                           nickname=user.nickname)
 
 load_dotenv()
 @app.route('/mail', methods=['GET', 'POST'])
@@ -227,7 +228,7 @@ def page_search():
     a_page = int(a_page) if a_page is not None else 0
 
     pagesize = 20
-    startwith = a_page*pagesize if a_page is not None else 0
+    startwith = a_page*pagesize
 
     filtered = list()
     filtered_names = set()
@@ -264,6 +265,10 @@ def page_game():
     gamedata = games[id]
     tournaments = db_sess.query(Tournament).filter(Tournament.gameid == id).all()
     reviews = db_sess.query(Review).filter(Review.gameid == id).all()
+    if len(reviews) == 0:
+        score = 0
+    else:
+        score = round(sum([x.score for x in reviews])/len(reviews))
     print(tournaments)
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
@@ -274,10 +279,11 @@ def page_game():
                            steamid=gamedata.get('url_info', {}).get('id', '<Не указан SteamID>'),
                            steamlink=gamedata.get('url_info', {}).get('url', 'no link'),
                            imgurl=gamedata['img_url'], # ладно, может не единственный...
-                           tournaments=tournaments,
-                           reviews=reviews,
+                           tournaments=tournaments[:5],
+                           reviews=reviews[:5],
                            now=datetime.utcnow(),
                            myid=id,
+                           rating=score,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )
 #endregion
@@ -360,13 +366,38 @@ def create_review():
                         gameid=gameid,)
         db_sess.add(review)
         db_sess.commit()
-        return redirect(f'/review?id={review.id}')
+        return redirect(f'/reviews?gameid={review.gameid}')
 
     return render_template('create_review.html',
                            name=games[gameid]['name'],
                            gameid=gameid,
                            form=form,
                            )
+
+@login_required
+@app.route('/reviews')
+def reviews():
+    a_gameid = request.args.get('gameid')
+    if (a_gameid is None) or (not a_gameid.isdigit()):
+        return render_template('whereiam.html')
+    a_gameid = int(a_gameid)
+    a_page = request.args.get('page')
+    a_page = int(a_page) if a_page is not None else 0
+    pagesize = 20
+    startwith = a_page * pagesize
+
+    allreviews = db_sess.query(Review).filter(Review.gameid == a_gameid).all()
+    reviews = allreviews[startwith:startwith+pagesize]
+    authors = {}
+    for r in reviews:
+        review_author = db_sess.query(User).filter(User.id == r.author).first()
+        if not (review_author.id in authors):
+            authors[review_author.id] = review_author.nickname
+    gamename = games[a_gameid]['name']
+
+    return render_template('reviews.html',
+                           reviews=reviews, page=a_page, authors=authors,
+                           maxpage=floor((len(reviews)-1)/pagesize), gameid=a_gameid, gamename=gamename)
 #endregion
 
 if __name__ == '__main__':

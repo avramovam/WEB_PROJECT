@@ -22,33 +22,46 @@
             </div>
             <div class="column" style="width: 25%"> <!-- рецензии -->
                 <div align="right" style="margin-bottom: 16px">
-                    <div style="background: #4d4; border-radius: 20px; padding: 0 15px; display: inline-block">
-                        <div style="font-size: 300%; display: inline">10</div>
-                        <div style="display: inline">/ 10</div>
-                    </div>
+                    {% include "rating_block.html" %}
                 </div>
-                <div class="reviews-frame" style="height: 400px">
-                    {% for r in reviews %}
-                        <div style="font-size: 75%">
-                            <h2>{{ r.title }}</h2>
-                            {{ r.desc }}
-                        </div>
-                    {% endfor %}
+                <div class="reviews-frame" style="height: 400px; overflow: auto">
+                    {% if reviews|length == 0 %}
+                        <div style="text-align: center">По этой игре нет рецензий.<br>Может, вы напишите?</div>
+                    {% else %}
+                        {% for r in reviews %}
+                            <div class="columned-content">
+                                <div class="column" style="width: 70%">
+                                    <h3>{{ r.title }}</h3>
+                                </div>
+                                <div class="column" style="width: 30%; font-size: 50%">
+                                    {% set rating = r.score %}
+                                    {% include "rating_block.html" %}
+                                </div>
+                            </div>
+                            <div style="font-size: 75%; margin: 5px 15px">{{ r.desc[:100] }}...</div>
+                            <hr>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 <div style="margin: 15px" align="center">
-                    <a class="btn btn-primary" href="/create_review?gameid={{ myid }}">
-                        Написать рецензию
+                    <a class="btn btn-secondary" href="/reviews?gameid={{ myid }}">
+                        Все рецензии
                     </a>
+                    {% if current_user.is_authenticated and current_user.level > 0 %}
+                        <a class="btn btn-primary" href="/create_review?gameid={{ myid }}">
+                            Написать рецензию
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        <div>
+        <div style="margin-bottom: 10px">
             <div>
                 {{ desc }}
             </div>
             <h2 style="margin: 64px 0 0 0">Турниры</h2>
             <div align="center" style="margin: 32px 0">
-                {% if current_user.is_authenticated %}
+                {% if current_user.is_authenticated and current_user.level > 0 %}
                     <a class="btn btn-success btn-lg" href="/create_tournament?gameid={{ myid }}" role="button">
                         Начать новый турнир
                     </a>
@@ -75,7 +88,7 @@
 
         <form action="/">
             <a class="back_button" href="javascript:history.back()">Назад</a>
-            <a class="back_button" href="/user?id={{ current_user.id }}">Добавить</a>
+            <a class="back_button" href="/user?id={{ current_user.id }}">Добавить в избранное</a>
         </form>
     </div>
 
