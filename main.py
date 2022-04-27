@@ -11,6 +11,7 @@ from data.db_session import func as sql_funcs
 from data.login_form import LoginForm
 from data.users import User
 from data.tournaments import Tournament
+from data.reviews import Review
 from data.register import RegisterForm
 from data.create_tournament_form import TournamentForm
 import json
