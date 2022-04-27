@@ -107,12 +107,11 @@ def profile():
     if '/game?gameid' in request.referrer:
         previous = request.referrer
         game_id = int(previous[previous.find('gameid=')+7:])
-        gamedata = games[game_id]
         fav = user.favourite
         if fav is None:
             fav = str(game_id) + ','
         elif str(game_id) in fav:
-            pass
+            fav = fav.replace(f'{game_id},', '')
         else:
             fav += f'{game_id},'
         db_sess.execute(
@@ -127,8 +126,6 @@ def profile():
     for i in new_result.split(',')[:-1]:
         gameid = int(i)
         list_of_games.append([gameid, games[gameid]['name']])
-        #gamedata = games[int(i)]
-        #list_of_games[gamedata['name']] = gamedata.get('url_info', {}).get('url', 'no link')
     return render_template("user.html", nickname=user.nickname, name=user.name, surname=user.surname, email=user.email, age=user.age,
                            games=list_of_games, level_profile=user.level, tournaments=tournaments)
 
@@ -139,7 +136,6 @@ def mail_form():
         return render_template('mail_me.html')
     else:
         email = request.values.get('email')
-        #global confirm_pass
         confirm_pass = randint(100000, 999999)
         db_sess.execute(
             sqlalchemy.update(User)
@@ -249,6 +245,7 @@ def page_search():
 
 @app.route('/game')
 def page_game():
+    user_id = int(session['_user_id'])
     steamid = request.args.get('steamid')
     if steamid is not None: # указан steamid игры, который нужно найти
         for i in range(len(games)):
@@ -264,7 +261,7 @@ def page_game():
             redirect('/', 301) # возвращаемся домой
     gamedata = games[id]
     tournaments = db_sess.query(Tournament).filter(Tournament.gameid == id).all()
-    print(tournaments)
+    fav_games = db_sess.query(User).filter(User.id == user_id).first().favourite.split(',')[:-1]
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
                            desc=gamedata.get('full_desc', {'desc':'<Нет описания>'})['desc'],
@@ -276,7 +273,8 @@ def page_game():
                            imgurl=gamedata['img_url'], # ладно, может не единственный...
                            tournaments=tournaments,
                            now=datetime.utcnow(),
-                           myid=id,
+                           myid=str(id),
+                           favourite=fav_games
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )
 #endregion
