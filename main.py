@@ -263,6 +263,7 @@ def page_game():
             redirect('/', 301) # возвращаемся домой
     gamedata = games[id]
     tournaments = db_sess.query(Tournament).filter(Tournament.gameid == id).all()
+    reviews = db_sess.query(Review).filter(Review.gameid == id).all()
     print(tournaments)
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
@@ -274,6 +275,7 @@ def page_game():
                            steamlink=gamedata.get('url_info', {}).get('url', 'no link'),
                            imgurl=gamedata['img_url'], # ладно, может не единственный...
                            tournaments=tournaments,
+                           reviews=reviews,
                            now=datetime.utcnow(),
                            myid=id,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
@@ -292,7 +294,7 @@ def create_tournament():
     if form.validate_on_submit():
         tournament = Tournament(name=form.name.data,
                                 desc=form.desc.data,
-                                author=session['_user_id'],
+                                author=int(session['_user_id']),
                                 contacts=form.contacts.data,
                                 members='',
                                 start=form.start.data,
@@ -343,7 +345,7 @@ def tournament():
 
 #region [РЕЦЕНЗИИ]
 @login_required
-@app.route('/create_review', method=['GET', 'POST'])
+@app.route('/create_review', methods=['GET', 'POST'])
 def create_review():
     gameid = request.args.get('gameid')
     if (gameid is None) or (not gameid.isdigit()):
@@ -351,7 +353,14 @@ def create_review():
     gameid = int(gameid)
     form = ReviewForm()
     if form.validate_on_submit():
-        return redirect(f'/review?id={0}')#review.id}')
+        review = Review(author=int(session['_user_id']),
+                        title=form.title.data,
+                        desc=form.desc.data,
+                        score=form.rating.data,
+                        gameid=gameid,)
+        db_sess.add(review)
+        db_sess.commit()
+        return redirect(f'/review?id={review.id}')
 
     return render_template('create_review.html',
                            name=games[gameid]['name'],

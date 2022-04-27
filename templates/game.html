@@ -27,8 +27,18 @@
                         <div style="display: inline">/ 10</div>
                     </div>
                 </div>
-                <div class="reviews-frame" style="height: 100%">
-                    <div style="text-align: center">Здесь будут рецензии.</div>
+                <div class="reviews-frame" style="height: 400px">
+                    {% for r in reviews %}
+                        <div style="font-size: 75%">
+                            <h2>{{ r.title }}</h2>
+                            {{ r.desc }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div style="margin: 15px" align="center">
+                    <a class="btn btn-primary" href="/create_review?gameid={{ myid }}">
+                        Написать рецензию
+                    </a>
                 </div>
             </div>
         </div>

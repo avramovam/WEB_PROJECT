@@ -11,4 +11,4 @@ class Review(SqlAlchemyBase):
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     desc = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     score = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    game_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    gameid = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
