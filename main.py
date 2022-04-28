@@ -241,8 +241,8 @@ def confirm_profile():
         return render_template('confirm_profile.html')
     if request.method == 'POST':
             passw = request.values.get('password')
-            hash_p = db_sess.query(User).filter(User.hashed_password == '').first().hashed_password
-            if hash_p == '':
+            user = db_sess.query(User).filter(User.hashed_password == '').first()
+            if user:
                 confirm_code = db_sess.query(User).filter(User.hashed_password == '').first().confirm_code
                 if str(passw) == str(confirm_code):
                     return redirect('/change_password')
@@ -315,7 +315,7 @@ def profile_edit():
                     )
         )
         db_sess.commit()
-        return redirect('/')
+        return redirect(f'/user?id={id}')
     return render_template('profile_edit.html', form=form)
 #endregion
 
@@ -394,7 +394,7 @@ def page_game():
                            tournaments=tournaments[:5],
                            reviews=reviews[:5],
                            now=datetime.utcnow(),
-                           myid=id,
+                           myid=str(id),
                            rating=score,
                            favourite=fav_games,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
@@ -531,4 +531,4 @@ if __name__ == '__main__':
         games: list[dict] = json.load(f)
     #print(games[100]) # тестовый запуск
     print('Загрузка завершена! Запускаем приложение...')
-    app.run(port=8080, host='127.0.0.1')
+    app.run(port=8080, host='127.0.0.5')
