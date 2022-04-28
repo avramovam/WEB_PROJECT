@@ -18,6 +18,7 @@ from data.reviews import Review
 from data.register import RegisterForm
 from data.review_form import ReviewForm
 from data.create_tournament_form import TournamentForm
+from data.admin_panel_form import AdminForm
 import json
 from dotenv import load_dotenv
 from mail_sender import send_email
@@ -98,7 +99,20 @@ def logout():
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
-    return e404(NotFound)
+    form = AdminForm()
+    if form.validate_on_submit():
+        db_sess.execute(
+            sqlalchemy.update(User)
+                .where(User.id == form.userid.data)
+                .values(level=form.level.data)
+        )
+        db_sess.commit()
+        return redirect('/admin')
+    else:
+        if get_current_user().level > 1:
+            return render_template('admin.html', form=form)
+        else:
+            return render_template('whereiam.html')
 
 @app.route('/user', methods=['GET', 'POST'])
 def profile():
