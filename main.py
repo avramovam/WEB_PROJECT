@@ -19,6 +19,8 @@ from data.tournaments import Tournament
 from data.reviews import Review
 from data.register import RegisterForm
 from data.review_form import ReviewForm
+from data.forgot_pass import Forgot_Password_Form
+from data.change_password import Change_Pass_Form
 from data.create_tournament_form import TournamentForm
 from data.admin_panel_form import AdminForm
 import json
@@ -65,13 +67,33 @@ def login():
         return render_template('login.html', message="Введен неверный никнейм, почта или пароль.", form=form)
     return render_template('login.html', form=form)
 
+
+@app.route('/forget_password', methods=['GET', 'POST'])
+def forget_password():
+    form = Forgot_Password_Form()
+    if form.validate_on_submit():
+        user = db_sess.query(User).filter(User.email == form.email.data, User.name == form.name.data, User.surname == form.surname.data,
+                                          User.age == form.age.data).first()
+        if not user:
+            return render_template('forget_password.html', message='Такого пользователя не существует', form=form)
+        if user:
+            db_sess.execute(
+                sqlalchemy.update(User)
+                    .where(User.email == form.email.data, User.name == form.name.data, User.surname == form.surname.data,
+                                          User.age == form.age.data)
+                    .values(hashed_password='')
+            )
+            db_sess.commit()
+            return redirect('/confirm_profile')
+    return render_template('forget_password.html', form=form)
+
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Register', form=form,
-                                   message="Пароль не соответсвует повторённому паролю")
+                                   message="Пароль не соответствует повторённому паролю")
         if (bool(db_sess.query(User).filter(User.email == form.email.data).first()) or
             bool(db_sess.query(User).filter(User.nickname == form.nickname.data).first())):
             return render_template('register.html', title='Register', form=form,
@@ -130,7 +152,7 @@ def profile():
         if fav is None:
             fav = str(game_id) + ','
         elif str(game_id) in fav:
-            pass
+            fav = fav.replace(f'{game_id},', '')
         else:
             fav += f'{game_id},'
         db_sess.execute(
@@ -199,9 +221,33 @@ def confirm_profile():
                     pass
             except Exception as E:
                 return f'Во время отправки на адрес {email} произошла ошибка'
+
+        if '/forget_password' in request.referrer:
+            id = int(db_sess.query(User).filter(User.hashed_password == '').first().id)
+            email = db_sess.query(User).filter(User.id == id).first().email
+            try:
+                confirm_pass = randint(100000, 999999)
+                db_sess.execute(
+                    sqlalchemy.update(User)
+                        .where(User.id == id)
+                        .values(confirm_code=confirm_pass)
+                )
+                db_sess.commit()
+                if send_email(email, 'Восстановление аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
+                    pass
+            except Exception as E:
+                return f'Во время отправки на адрес {email} произошла ошибка'
+
         return render_template('confirm_profile.html')
     if request.method == 'POST':
             passw = request.values.get('password')
+            hash_p = db_sess.query(User).filter(User.hashed_password == '').first().hashed_password
+            if hash_p == '':
+                confirm_code = db_sess.query(User).filter(User.hashed_password == '').first().confirm_code
+                if str(passw) == str(confirm_code):
+                    return redirect('/change_password')
+                else:
+                    return render_template('confirm_profile.html', message='Коды не совпадают. Попробуйте снова')
             if str(passw) == str(get_current_user().confirm_code):
                 db_sess.execute(
                     sqlalchemy.update(User)
@@ -211,13 +257,40 @@ def confirm_profile():
                 db_sess.commit()
                 return redirect('/')
             else:
-                return render_template('confirm_profile.html', message='Пароли не совпадают. Попробуйте снова')
+                return render_template('confirm_profile.html', message='Коды не совпадают. Попробуйте снова')
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    form = Change_Pass_Form()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('change_password.html', form=form,
+                                   message="Пароли не совпадают")
+        else:
+            user = db_sess.query(User).filter(User.hashed_password == '').first()
+            user.set_password(form.password.data)
+            db_sess.commit()
+            return redirect('/login')
+    return render_template('change_password.html', form=form)
+
 
 @app.route('/profile_edit', methods=['GET', 'POST'])
 @login_required
 def profile_edit():
     id = int(session['_user_id'])
     form = RegisterForm()
+    if request.method == 'GET':
+        users = get_current_user()
+        if users:
+            form.nickname.data = users.nickname
+            form.email.data = users.email
+            form.password.data = users.hashed_password
+            form.password_again.data = users.hashed_password
+            form.name.data = users.name
+            form.surname.data = users.surname
+            form.age.data = users.age
+        else:
+            e404(404)
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('profile_edit.html', title='Register', form=form,
@@ -286,6 +359,7 @@ def page_search():
 
 @app.route('/game')
 def page_game():
+    user_id = int(session['_user_id'])
     steamid = request.args.get('steamid')
     if steamid is not None: # указан steamid игры, который нужно найти
         for i in range(len(games)):
