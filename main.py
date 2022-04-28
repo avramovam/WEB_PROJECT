@@ -150,6 +150,14 @@ def profile():
                            games=list_of_games, level_profile=user.level, tournaments=tournaments,
                            nickname=user.nickname)
 
+@app.route('/is_your_email', methods=['GET', 'POST'])
+def is_your_email():
+    if request.method == 'GET':
+        id = int(session['_user_id'])
+        email = db_sess.query(User).filter(User.id == id).first().email
+        return render_template('is_your_email.html', email=email)
+
+
 load_dotenv()
 @app.route('/mail', methods=['GET', 'POST'])
 def mail_form():
@@ -162,32 +170,47 @@ def mail_form():
         db_sess.execute(
             sqlalchemy.update(User)
             .where(User.id == int(session['_user_id']))
-            .values(confirm_code=confirm_pass)
+            .values(confirm_code=confirm_pass, email=email)
         )
         db_sess.commit()
         try:
             if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
                 return redirect('/confirm_profile')
         except Exception as E:
-            return f'Во время отправки на адрес {email} произошла ошибка'
+            return render_template('mail_me.html', message=f'Во время отправки на адрес {email} произошла ошибка')
 
 load_dotenv()
 @app.route('/confirm_profile', methods=['GET', 'POST'])
 def confirm_profile():
     if request.method == 'GET':
+        if '/is_your_email' in request.referrer:
+            id = int(session['_user_id'])
+            email = db_sess.query(User).filter(User.id == id).first().email
+            try:
+                confirm_pass = randint(100000, 999999)
+                db_sess.execute(
+                    sqlalchemy.update(User)
+                        .where(User.id == int(session['_user_id']))
+                        .values(confirm_code=confirm_pass)
+                )
+                db_sess.commit()
+                if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
+                    pass
+            except Exception as E:
+                return f'Во время отправки на адрес {email} произошла ошибка'
         return render_template('confirm_profile.html')
-    else:
-        passw = request.values.get('password')
-        if str(passw) == str(get_current_user().confirm_code):
-            db_sess.execute(
-                sqlalchemy.update(User)
-                    .where(User.id == int(session['_user_id']))
-                    .values(level=1)
-            )
-            db_sess.commit()
-            return redirect('/')
-        else:
-            return 'error'
+    if request.method == 'POST':
+            passw = request.values.get('password')
+            if str(passw) == str(get_current_user().confirm_code):
+                db_sess.execute(
+                    sqlalchemy.update(User)
+                        .where(User.id == int(session['_user_id']))
+                        .values(level=1)
+                )
+                db_sess.commit()
+                return redirect('/')
+            else:
+                return render_template('confirm_profile.html', message='Пароли не совпадают. Попробуйте снова')
 
 @app.route('/profile_edit', methods=['GET', 'POST'])
 @login_required

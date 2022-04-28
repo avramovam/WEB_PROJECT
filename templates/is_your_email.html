@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+</head>
+<body>
+<form method="post" class="form-group">
+    <h1>Мы отправим код подтверждения на вашу почту. Это ваш email: {{ email }} ?</h1>
+    <form action="/">
+            <a class="back_button" href="/confirm_profile">Да</a><a class="back_button" href="/mail">Нет</a>
+    </form>
+</form>
+</body>
+
+{% endblock %}
