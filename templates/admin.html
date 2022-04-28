@@ -22,7 +22,7 @@
             <p>
                 <h3>{{ form.level.label }}</h3>
                 {{ form.level(class="form-control form-transparent") }}<br>
-                {% for error in form.rating.errors %}
+                {% for error in form.level.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
