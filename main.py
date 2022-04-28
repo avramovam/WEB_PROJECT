@@ -11,6 +11,7 @@ from werkzeug.exceptions import NotFound
 from datetime import datetime, timezone, timedelta
 from data import db_session
 from data.db_session import func as sql_funcs
+from data.translate_usd_to_rub import translateUsdToRub
 from data.login_form import LoginForm
 from data.users import User
 from data.tournaments import Tournament
@@ -289,7 +290,7 @@ def page_game():
                            desc=gamedata.get('full_desc', {'desc':'<Нет описания>'})['desc'],
                            date=gamedata.get('date', '<Даты выхода нет>'),
                            dev=gamedata.get('developer', '<Разработчик не указан>'),
-                           cents=gamedata.get('price', '<Цена не указана>'),
+                           rub=translateUsdToRub(gamedata.get('price', '<Цена не указана>')),
                            steamid=gamedata.get('url_info', {}).get('id', '<Не указан SteamID>'),
                            steamlink=gamedata.get('url_info', {}).get('url', 'no link'),
                            imgurl=gamedata['img_url'], # ладно, может не единственный...

@@ -17,6 +17,13 @@
                         {% endif %}
                     </div>
                     <div style="color: rgba(238, 238, 238, 0.5);">{{ date }} | {{ dev }}</div>
+                    <div style="color: rgba(238, 238, 238, 0.5);">
+                    {% if rub == "free" %}
+                        Бесплатно
+                    {% else %}
+                        Цена: {{ rub }} рублей
+                    {% endif %}
+                    </div>
                 </div>
                 <img src="{{ imgurl }}" alt="{{ name }}" style="width: 100%; border: solid #eee">
             </div>
