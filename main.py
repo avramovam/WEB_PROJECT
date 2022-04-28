@@ -381,6 +381,7 @@ def page_game():
     else:
         score = round(sum([x.score for x in reviews])/len(reviews))
     print(tournaments)
+    fav_games = get_current_user().favourite.split(',')[:-1]
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
                            desc=gamedata.get('full_desc', {'desc':'<Нет описания>'})['desc'],
@@ -395,6 +396,7 @@ def page_game():
                            now=datetime.utcnow(),
                            myid=id,
                            rating=score,
+                           favourite=fav_games,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )
 #endregion
