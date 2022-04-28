@@ -7,6 +7,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
 from ntpath import isfile
 from werkzeug.exceptions import NotFound
+from werkzeug.security import generate_password_hash
 
 from datetime import datetime, timezone, timedelta
 from data import db_session
@@ -217,33 +218,31 @@ def confirm_profile():
 def profile_edit():
     id = int(session['_user_id'])
     form = RegisterForm()
-    if request.method == 'POST':
-        f = request.values.get('image')
-        print(f)
-    else:
-        users = get_current_user()
-        if users:
-            form.email.data = users.email
-            form.password.data = users.hashed_password
-            form.password_again.data = users.hashed_password
-            form.name.data = users.name
-            form.surname.data = users.surname
-            form.age.data = users.age
-        else:
-            e404(404)
     if form.validate_on_submit():
-        users = db_sess.query(User).filter(User.id == id).first()
-        if users:
-            users.email = form.email.data
-            users.password = form.password.data
-            users.password_again = form.password.data
-            users.name = form.name.data
-            users.surname = form.surname.data
-            users.age = form.age.data
-            db_sess.commit()
-            return redirect('/')
-        else:
-            e404(404)
+        if form.password.data != form.password_again.data:
+            return render_template('profile_edit.html', title='Register', form=form,
+                                   message="Пароль не соответсвует повторённому паролю")
+
+        if form.validate_on_submit():
+            if (bool(db_sess.query(User).filter(User.id != id).filter(User.email == form.email.data).first()) or
+                bool(db_sess.query(User).filter(User.id != id).filter(User.nickname == form.nickname.data).first())):
+                return render_template('profile_edit.html', title='Register', form=form,
+                                       message="Пользователь с таким ником или почтой уже есть")
+
+        db_sess.execute(
+            sqlalchemy.update(User)
+            .where(User.id == id)
+            .values(email=form.email.data,
+                    hashed_password=generate_password_hash(form.password.data),
+                    modifed_date=datetime.now(),
+                    age=form.age.data,
+                    name=form.name.data,
+                    surname=form.surname.data,
+                    nickname=form.nickname.data,
+                    )
+        )
+        db_sess.commit()
+        return redirect('/')
     return render_template('profile_edit.html', form=form)
 #endregion
 
