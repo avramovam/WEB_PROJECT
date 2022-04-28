@@ -1,0 +1,102 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - {{ name }}</title>
+{% endblock %}
+
+{% block body %}
+    <div style="font-family: Montserrat">
+        <div class="columned-content"> <!-- 1/2: основной контент -->
+            <div class="column" style="width: 75%"> <!-- главная часть -->
+                <div style="font-size: 150%">
+                    <div style="font-size: 200%">
+                        {% if steamlink == "no link" %} <!-- ссылки нет -->
+                            {{ name }}
+                        {% else %}
+                            <a class="white" href="{{ steamlink }}">{{ name }}</a>
+                        {% endif %}
+                    </div>
+                    <div style="color: rgba(238, 238, 238, 0.5);">{{ date }} | {{ dev }}</div>
+                    <div style="color: rgba(238, 238, 238, 0.5);">
+                    {% if rub == "free" %}
+                        Бесплатно
+                    {% else %}
+                        Цена: {{ rub }} рублей
+                    {% endif %}
+                    </div>
+                </div>
+                <img src="{{ imgurl }}" alt="{{ name }}" style="width: 100%; border: solid #eee">
+            </div>
+            <div class="column" style="width: 25%"> <!-- рецензии -->
+                <div align="right" style="margin-bottom: 16px">
+                    {% include "rating_block.html" %}
+                </div>
+                <div class="reviews-frame" style="height: 400px; overflow: auto">
+                    {% if reviews|length == 0 %}
+                        <div style="text-align: center">По этой игре нет рецензий.<br>Может, вы напишите?</div>
+                    {% else %}
+                        {% for r in reviews %}
+                            <div class="columned-content">
+                                <div class="column" style="width: 70%">
+                                    <h3>{{ r.title }}</h3>
+                                </div>
+                                <div class="column" style="width: 30%; font-size: 50%">
+                                    {% set rating = r.score %}
+                                    {% include "rating_block.html" %}
+                                </div>
+                            </div>
+                            <div style="font-size: 75%; margin: 5px 15px">{{ r.desc[:100] }}...</div>
+                            <hr>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div style="margin: 15px" align="center">
+                    <a class="btn btn-secondary" href="/reviews?gameid={{ myid }}">
+                        Все рецензии
+                    </a>
+                    {% if current_user.is_authenticated and current_user.level > 0 %}
+                        <a class="btn btn-primary" href="/create_review?gameid={{ myid }}">
+                            Написать рецензию
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom: 10px">
+            <div>
+                {{ desc }}
+            </div>
+            <h2 style="margin: 64px 0 0 0">Турниры</h2>
+            <div align="center" style="margin: 32px 0">
+                {% if current_user.is_authenticated and current_user.level > 0 %}
+                    <a class="btn btn-success btn-lg" href="/create_tournament?gameid={{ myid }}" role="button">
+                        Начать новый турнир
+                    </a>
+                {% endif %}
+            </div>
+            <div class="tournaments-frame">
+                {% for t in tournaments %}
+                    <div>
+                        <h3><a class="white" href="/tournament?id={{ t.id }}">{{ t.name }}</a></h3>
+                        {{ t.start }} (UTC+0)
+                        {% if now.timestamp() > t.start.timestamp() %} <!-- турнир уже начался -->
+                            {% if (t.flags % 2) == 0 %} <!-- не закончился -->
+                                <div style="color: #dd3">Ещё идет</div>
+                            {% else %} <!-- закончился -->
+                                <div style="color: #d33">Закончился</div>
+                            {% endif %}
+                        {% else %} <!-- не начался -->
+                            <div style="color: #3d3">Ещё не начался</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <form action="/">
+            <a class="back_button" href="javascript:history.back()">Назад</a>
+            <a class="back_button" href="/user?id={{ current_user.id }}">Добавить в избранное</a>
+        </form>
+    </div>
+
+{% endblock %}

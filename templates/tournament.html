@@ -1,0 +1,58 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - {{ tourdata.name }}</title>
+{% endblock %}
+
+{% block body %}
+    <div style="font-family: Montserrat">
+        <div class="columned-content">
+            <div class="column" style="width: 75%">
+                <h1 style="display: inline">{{ tourdata.name }}</h1>
+                <div style="display: inline; font-style: italic; color: rgba(255, 255, 255, 0.4)">#{{ tourdata.id }}</div>
+                <h3>По игре <a class="white special" style="color: #6ae" href="/game?gameid={{ tourdata.gameid }}">{{ gamedata['name'] }}</a></h3>
+                {% for line in tourdata.desc.split('\n') %}
+                    <p>
+                        {{ line }}
+                    </p>
+                {% endfor %}
+            </div>
+            <div class="column" style="width: 25%; text-align: right">
+                <h2>Начало: {{ tourdata.start }} (UTC+0)</h2>
+                <h2>
+                {% if now.timestamp() > tourdata.start.timestamp() %} <!-- турнир уже начался -->
+                    {% if (tourdata.flags % 2) == 0 %} <!-- не закончился -->
+                        <div style="color: #dd3">Ещё идет</div>
+                    {% else %} <!-- закончился -->
+                        <div style="color: #d33">Закончился</div>
+                    {% endif %}
+                {% else %} <!-- не начался -->
+                    {% if (tourdata.flags % 2) == 0 %} <!-- не закончился -->
+                        <div style="color: #3d3">Ещё не начался</div>
+                    {% else %} <!-- закончился -->
+                        <div style="color: #d33">Отменён</div>
+                    {% endif %}
+                {% endif %}
+                </h2>
+                <h2>Участники турнира</h2>
+                <div style="border: solid #eee 4px; border-radius: 15px; background: rgba(0,0,0,0.1); padding: 10px">
+                    <ul style="text-align: left; margin-bottom: 0">
+                        {% for p in participants %}
+                            <li>
+                                <a class="white" href="/user?id={{ p[0] }}">{{ p[1] }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <form action="" method="post">
+            <button type="submit" class="btn btn-danger">Завершить турнир</button>
+            <div style="color: #d66">
+                <b>Внимание!</b>
+                После нажатия этой кнопки вы не сможете добавлять участников и восстановить действие турнира.
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

@@ -1,7 +1,41 @@
 {% extends "base.html" %}
 
 {% block header %}
-<!-- Сюда шапку -->
+    <div style="font-family: Montserrat">
+        <nav class="navbar navbar-dark bg-transparent">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">Omegame</a>
+                {% if current_user.is_authenticated %}
+                    <ul class="navbar-nav">
+                        <li class="navbar-item">
+                            <a class="white special" style="font-size: 125%; display: block; text-align: right"
+                               href="/user?id={{ current_user.id }}">{{ current_user.nickname }}</a>
+                            {% if current_user.level != 1 %}
+                                {% if current_user.level == 0 %}
+                                    <div style="color: #d66; font-size: 80%; display: inline; font-style: italic">Неподтвержденный аккаунт</div>
+                                {% elif current_user.level == 2 %}
+                                    <div style="color: #2bd; font-size: 80%; display: inline; font-style: italic">Админ</div>
+                                {% elif current_user.level == 3 %}
+                                    <div style="color: #d2d; font-size: 80%; display: inline; font-style: italic">Коренной аккаунт</div>
+                                {% endif %}
+                                <div style="display: inline; font-size: 80%"> / </div>
+                            {% endif %}
+                            <a class="white special" style="color: #d22; font-size: 80%" href="/logout">Выйти</a>
+                        </li>
+                    </ul>
+                {% else %}
+                    <ul class="navbar-nav" style="flex-direction: row">
+                        <li style="padding: 0 8px">
+                            <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
+                        </li>
+                        <li style="padding: 0 8px">
+                            <a class="btn btn-success" href="/login">Войти</a>
+                        </li>
+                    </ul>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
 {% endblock %}
 
 {% block footer %}

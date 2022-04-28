@@ -1,0 +1,46 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - написать рецензию</title>
+{% endblock %}
+
+{% block body %}
+    <div style="font-family: Montserrat">
+        <div style="font-size: 300%; font-weight: 700; margin-bottom: 40px">
+            Написать рецензию по
+            <a class="white" href="/game?gameid={{ gameid }}">{{ name }}</a>
+        </div>
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            {{ form.csrf_token }}
+            <p>
+                <h3>{{ form.title.label }}</h3>
+                {{ form.title(class="form-control form-transparent") }}<br>
+                {% for error in form.title.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                <h3>{{ form.rating.label }}</h3>
+                {{ form.rating(class="form-control form-transparent") }}<br>
+                {% for error in form.rating.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                <h3>{{ form.desc.label }}</h3>
+                {{ form.desc(class="form-control form-transparent") }}<br>
+                {% for error in form.desc.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        </form>
+    </div>
+{% endblock %}

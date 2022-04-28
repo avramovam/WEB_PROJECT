@@ -1,0 +1,56 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - создать турнир</title>
+{% endblock %}
+
+{% block body %}
+    <div style="font-family: Montserrat">
+        <div style="font-size: 300%; font-weight: 700; margin-bottom: 40px">
+            Создать турнир по
+            <a class="white" href="/game?gameid={{ gameid }}">{{ name }}</a>
+        </div>
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            {{ form.csrf_token }}
+            <p>
+                <h3>{{ form.name.label }}</h3>
+                {{ form.name(class="form-control form-transparent") }}<br>
+                {% for error in form.name.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                <h3>{{ form.desc.label }}</h3>
+                {{ form.desc(class="form-control form-transparent") }}<br>
+                {% for error in form.desc.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                <h3>{{ form.contacts.label }}</h3>
+                {{ form.contacts(class="form-control form-transparent") }}<br>
+                {% for error in form.contacts.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                <h3>{{ form.start.label }}</h3>
+                {{ form.start(class="form-control form-transparent", type="datetime-local") }}<br>
+                {% for error in form.start.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>{{ form.show() }} {{ form.show.label }}</p>
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        </form>
+    </div>
+{% endblock %}

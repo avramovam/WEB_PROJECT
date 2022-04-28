@@ -1,0 +1,13 @@
+{% extends "ext.html" %}
+
+{% block body %}
+</head>
+<body>
+<form method="post" class="form-group">
+    <input type="password" class="form-control" name="password">
+    <p>Введите код</p>
+    <button type="submit" class="btn btn-primary">Отправить код</button>
+</form>
+{{ message }}
+</body>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - поиск ({{ games|length }})</title>
+{% endblock %}
+
+{% block body %}
+    <div style="font-family: Montserrat">
+        {% include "search_engine.html" %}
+        <!-- Блоки игр -->
+        {% for g in games %}
+            {% set name = g["name"] %}
+            <div class="gamecard">
+                <h1>
+                    <a class="white special" href="/game?gameid={{ g['id'] }}">{{ name }}</a>
+                {% if "url_info" in g and "url" in g['url_info'] %}
+                    <i style="font-size: 50%"><a class="white itsgray" href="{{ g['url_info']['url'] }}">(перейти на страницу в Steam)</a></i>
+                {% endif %}
+                </h1>
+                <div style="margin-right: 10px; float: left">
+                    <div style="border: solid #333; background: #555; width: 400px; display: inline-block;" align="left">
+                        {% if "img_url" in g %}
+                            <img src="{{ g['img_url'] }}" alt="{{ name }}" style="max-width: 100%; max-height: 100%;">
+                        {% endif %}
+                    </div>
+                </div>
+                {% if "full_desc" in g %}
+                <p style="text-indent: 10px">{{ g['full_desc']['desc'][:700] }}...</p>
+                {% endif %}
+                <div style="padding: 0 10%">
+                    <table style="width: 100%; table-layout: fixed">
+                        <tr>
+                            <td style="padding: 8px" align="left">
+                                <b>0</b> рецензий
+                            </td>
+                            {% if g['tournum'] > 0 %}
+                                <td align="center" style="padding: 8px">
+                                    <div style="color: #1b1">
+                                        Идёт {{ g['acttournum'] }} турнир(-а/-ов)
+                                    </div>
+                                    <div style="color: #d91">
+                                        Прошло {{ g['tournum']-g['acttournum'] }} турнир(-а/-ов)
+                                    </div>
+                                </td>
+                            {% endif %}
+                            <td style="padding: 8px" align="right">
+                                <div class="button-to-game-bg">
+                                    <a class="white noul" href="/game?gameid={{ g['id'] }}">
+                                        Перейти к странице
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+        <!-- Кнопки взад и перед -->
+        <table style="table-layout: fixed; width: 100%">
+            <tr>
+                <td align="center">
+                    {% if page > 0 %}
+                        {% set mylink = link + "&page=" + (page-1)|string %} <!-- ссылка для предыдущей страницы -->
+                        <a class="white special" href="{{ mylink }}">Предыдущая страница</a>
+                    {% endif %}
+                </td>
+                <td align="center">
+                    <!-- пока пусто -->
+                </td>
+                <td align="center">
+                    {% if page < maxpage %}
+                        {% set mylink = link + "&page=" + (page+1)|string %} <!-- ссылка для следующей страницы -->
+                        <a class="white special" href="{{ mylink }}">Следующая страница</a>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+{% endblock %}

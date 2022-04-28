@@ -1,0 +1,9 @@
+{% if (rating >= 0 and rating <= 10) %}
+    {% set rating_block_color = ['#CC5252', '#CC6A52', '#CC8352', '#CC9B52', '#CCB452', '#CCCC52', '#B4CC52', '#9BCC52', '#83CC52', '#6ACC52', '#52CC52'][rating] %}
+{% else %}
+    {% set rating_block_color = '#000000' %}
+{% endif %}
+<div style="background: {{ rating_block_color }}; border-radius: 20px; padding: 0 15px; display: inline-block">
+    <div style="font-size: 300%; display: inline">{{ rating }}</div>
+    <div style="display: inline">/ 10</div>
+</div>

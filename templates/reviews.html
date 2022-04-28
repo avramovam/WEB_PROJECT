@@ -1,0 +1,52 @@
+{% extends "ext.html" %}
+
+{% block head %}
+    <title>Omegame - поиск ({{ games|length }})</title>
+{% endblock %}
+
+{% block body %}
+    <div style="font-family: Montserrat">
+        <h2>Рецензии по <a class="white" href="/game?gameid={{ gameid }}">{{ gamename }}</a></h2>
+        {% for r in reviews %}
+            <div class="gamecard">
+                <div class="columned-content">
+                    <div class="column" style="width: 80%">
+                        <h1>{{ r.title }}</h1>
+                    </div>
+                    <div class="column" style="width: 20%">
+                        <div align="right">
+                            {% set rating = r.score %}
+                            {% include "rating_block.html" %}
+                        </div>
+                    </div>
+                </div>
+                <div style="margin: 10px">
+                    {{ r.desc }}
+                </div>
+                <h2 style="text-align: right; font-style: italic"> -
+                    <a class="white" href="user?id={{ r.author }}">{{ authors[r.author] }}</a>
+                </h2>
+            </div>
+        {% endfor %}
+        <!-- Кнопки взад и перед -->
+        <table style="table-layout: fixed; width: 100%">
+            <tr>
+                <td align="center">
+                    {% if page > 0 %}
+                        {% set mylink = link + "&page=" + (page-1)|string %} <!-- ссылка для предыдущей страницы -->
+                        <a class="white special" href="{{ mylink }}">Предыдущая страница</a>
+                    {% endif %}
+                </td>
+                <td align="center">
+                    <!-- пока пусто -->
+                </td>
+                <td align="center">
+                    {% if page < maxpage %}
+                        {% set mylink = link + "&page=" + (page+1)|string %} <!-- ссылка для следующей страницы -->
+                        <a class="white special" href="{{ mylink }}">Следующая страница</a>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+{% endblock %}
