@@ -7,6 +7,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user
 from math import floor
 from ntpath import isfile
 from werkzeug.exceptions import NotFound
+from werkzeug.security import generate_password_hash
 
 from datetime import datetime, timezone, timedelta
 from data import db_session
@@ -18,6 +19,8 @@ from data.tournaments import Tournament
 from data.reviews import Review
 from data.register import RegisterForm
 from data.review_form import ReviewForm
+from data.forgot_pass import Forgot_Password_Form
+from data.change_password import Change_Pass_Form
 from data.create_tournament_form import TournamentForm
 from data.admin_panel_form import AdminForm
 import json
@@ -64,13 +67,33 @@ def login():
         return render_template('login.html', message="Введен неверный никнейм, почта или пароль.", form=form)
     return render_template('login.html', form=form)
 
+
+@app.route('/forget_password', methods=['GET', 'POST'])
+def forget_password():
+    form = Forgot_Password_Form()
+    if form.validate_on_submit():
+        user = db_sess.query(User).filter(User.email == form.email.data, User.name == form.name.data, User.surname == form.surname.data,
+                                          User.age == form.age.data).first()
+        if not user:
+            return render_template('forget_password.html', message='Такого пользователя не существует', form=form)
+        if user:
+            db_sess.execute(
+                sqlalchemy.update(User)
+                    .where(User.email == form.email.data, User.name == form.name.data, User.surname == form.surname.data,
+                                          User.age == form.age.data)
+                    .values(hashed_password='')
+            )
+            db_sess.commit()
+            return redirect('/confirm_profile')
+    return render_template('forget_password.html', form=form)
+
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Register', form=form,
-                                   message="Пароль не соответсвует повторённому паролю")
+                                   message="Пароль не соответствует повторённому паролю")
         if (bool(db_sess.query(User).filter(User.email == form.email.data).first()) or
             bool(db_sess.query(User).filter(User.nickname == form.nickname.data).first())):
             return render_template('register.html', title='Register', form=form,
@@ -129,7 +152,7 @@ def profile():
         if fav is None:
             fav = str(game_id) + ','
         elif str(game_id) in fav:
-            pass
+            fav = fav.replace(f'{game_id},', '')
         else:
             fav += f'{game_id},'
         db_sess.execute(
@@ -198,9 +221,33 @@ def confirm_profile():
                     pass
             except Exception as E:
                 return f'Во время отправки на адрес {email} произошла ошибка'
+
+        if '/forget_password' in request.referrer:
+            id = int(db_sess.query(User).filter(User.hashed_password == '').first().id)
+            email = db_sess.query(User).filter(User.id == id).first().email
+            try:
+                confirm_pass = randint(100000, 999999)
+                db_sess.execute(
+                    sqlalchemy.update(User)
+                        .where(User.id == id)
+                        .values(confirm_code=confirm_pass)
+                )
+                db_sess.commit()
+                if send_email(email, 'Восстановление аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
+                    pass
+            except Exception as E:
+                return f'Во время отправки на адрес {email} произошла ошибка'
+
         return render_template('confirm_profile.html')
     if request.method == 'POST':
             passw = request.values.get('password')
+            hash_p = db_sess.query(User).filter(User.hashed_password == '').first().hashed_password
+            if hash_p == '':
+                confirm_code = db_sess.query(User).filter(User.hashed_password == '').first().confirm_code
+                if str(passw) == str(confirm_code):
+                    return redirect('/change_password')
+                else:
+                    return render_template('confirm_profile.html', message='Коды не совпадают. Попробуйте снова')
             if str(passw) == str(get_current_user().confirm_code):
                 db_sess.execute(
                     sqlalchemy.update(User)
@@ -210,19 +257,32 @@ def confirm_profile():
                 db_sess.commit()
                 return redirect('/')
             else:
-                return render_template('confirm_profile.html', message='Пароли не совпадают. Попробуйте снова')
+                return render_template('confirm_profile.html', message='Коды не совпадают. Попробуйте снова')
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    form = Change_Pass_Form()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('change_password.html', form=form,
+                                   message="Пароли не совпадают")
+        else:
+            user = db_sess.query(User).filter(User.hashed_password == '').first()
+            user.set_password(form.password.data)
+            db_sess.commit()
+            return redirect('/login')
+    return render_template('change_password.html', form=form)
+
 
 @app.route('/profile_edit', methods=['GET', 'POST'])
 @login_required
 def profile_edit():
     id = int(session['_user_id'])
     form = RegisterForm()
-    if request.method == 'POST':
-        f = request.values.get('image')
-        print(f)
-    else:
+    if request.method == 'GET':
         users = get_current_user()
         if users:
+            form.nickname.data = users.nickname
             form.email.data = users.email
             form.password.data = users.hashed_password
             form.password_again.data = users.hashed_password
@@ -232,18 +292,30 @@ def profile_edit():
         else:
             e404(404)
     if form.validate_on_submit():
-        users = db_sess.query(User).filter(User.id == id).first()
-        if users:
-            users.email = form.email.data
-            users.password = form.password.data
-            users.password_again = form.password.data
-            users.name = form.name.data
-            users.surname = form.surname.data
-            users.age = form.age.data
-            db_sess.commit()
-            return redirect('/')
-        else:
-            e404(404)
+        if form.password.data != form.password_again.data:
+            return render_template('profile_edit.html', title='Register', form=form,
+                                   message="Пароль не соответсвует повторённому паролю")
+
+        if form.validate_on_submit():
+            if (bool(db_sess.query(User).filter(User.id != id).filter(User.email == form.email.data).first()) or
+                bool(db_sess.query(User).filter(User.id != id).filter(User.nickname == form.nickname.data).first())):
+                return render_template('profile_edit.html', title='Register', form=form,
+                                       message="Пользователь с таким ником или почтой уже есть")
+
+        db_sess.execute(
+            sqlalchemy.update(User)
+            .where(User.id == id)
+            .values(email=form.email.data,
+                    hashed_password=generate_password_hash(form.password.data),
+                    modifed_date=datetime.now(),
+                    age=form.age.data,
+                    name=form.name.data,
+                    surname=form.surname.data,
+                    nickname=form.nickname.data,
+                    )
+        )
+        db_sess.commit()
+        return redirect('/')
     return render_template('profile_edit.html', form=form)
 #endregion
 
@@ -287,6 +359,7 @@ def page_search():
 
 @app.route('/game')
 def page_game():
+    user_id = int(session['_user_id'])
     steamid = request.args.get('steamid')
     if steamid is not None: # указан steamid игры, который нужно найти
         for i in range(len(games)):
@@ -308,6 +381,7 @@ def page_game():
     else:
         score = round(sum([x.score for x in reviews])/len(reviews))
     print(tournaments)
+    fav_games = get_current_user().favourite.split(',')[:-1]
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
                            desc=gamedata.get('full_desc', {'desc':'<Нет описания>'})['desc'],
@@ -322,6 +396,7 @@ def page_game():
                            now=datetime.utcnow(),
                            myid=id,
                            rating=score,
+                           favourite=fav_games,
                            # если steamlink == no link, то ссылку не создавать (таких случаев кстати не должно быть)
                            )
 #endregion
