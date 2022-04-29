@@ -190,16 +190,17 @@ def mail_form():
         email = request.values.get('email')
         #global confirm_pass
         confirm_pass = randint(100000, 999999)
-        db_sess.execute(
-            sqlalchemy.update(User)
-            .where(User.id == int(session['_user_id']))
-            .values(confirm_code=confirm_pass, email=email)
-        )
-        db_sess.commit()
         try:
+            db_sess.execute(
+                sqlalchemy.update(User)
+                    .where(User.id == int(session['_user_id']))
+                    .values(confirm_code=confirm_pass, email=email)
+            )
+            db_sess.commit()
             if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
                 return redirect('/confirm_profile')
         except Exception as E:
+            print(E)
             return render_template('mail_me.html', message=f'Во время отправки на адрес {email} произошла ошибка')
 
 load_dotenv()
@@ -220,6 +221,7 @@ def confirm_profile():
                 if send_email(email, 'Подтверждение аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
                     pass
             except Exception as E:
+                print(E)
                 return f'Во время отправки на адрес {email} произошла ошибка'
 
         if '/forget_password' in request.referrer:
@@ -236,6 +238,7 @@ def confirm_profile():
                 if send_email(email, 'Восстановление аккаунта', f'Ваш код для подтверждения: {confirm_pass}'):
                     pass
             except Exception as E:
+                print(E)
                 return f'Во время отправки на адрес {email} произошла ошибка'
 
         return render_template('confirm_profile.html')
