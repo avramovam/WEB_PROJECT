@@ -95,10 +95,14 @@
 
         <form action="/">
             <a class="back_button" href="javascript:history.back()">Назад</a>
-            {% if myid in favourite %}
-            <a class="like_button" href="/user?id={{ current_user.id }}">Удалить из списка любимых игр</a>
+            {% if favourite == '' %}
+            <a class="like_button">Вы не авторизованы</a>
             {% else %}
-            <a class="like_button" href="/user?id={{ current_user.id }}">Добавить в список любимых игр</a>
+                {% if myid in favourite %}
+                <a class="like_button" href="/user?id={{ current_user.id }}">Удалить из списка любимых игр</a>
+                {% else %}
+                <a class="like_button" href="/user?id={{ current_user.id }}">Добавить в список любимых игр</a>
+                {% endif %}
             {% endif %}
         </form>
     </div>

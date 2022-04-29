@@ -359,14 +359,18 @@ def page_search():
 
 @app.route('/game')
 def page_game():
-    user_id = int(session['_user_id'])
+    auth = ('_user_id' in session)
+    if auth:
+        fav_games = get_current_user().favourite.split(',')[:-1]
+    else:
+        fav_games = ''
     steamid = request.args.get('steamid')
     if steamid is not None: # указан steamid игры, который нужно найти
         for i in range(len(games)):
             if 'url_info' in games[i] and games[i]['url_info']['id'] == steamid:
                 break # найден steamid
         else: # не найден steamid ---------------------------.
-            return redirect('/', 301) # возвращаемся домой   |
+            return redirect('/', 301) # возвращаемся домой   |`
         # сюда мы выходим в случае break   <-----------------'
         id = i
     else: # не указан steamid
@@ -380,8 +384,6 @@ def page_game():
         score = 0
     else:
         score = round(sum([x.score for x in reviews])/len(reviews))
-    print(tournaments)
-    fav_games = get_current_user().favourite.split(',')[:-1]
     return render_template('game.html',
                            name=gamedata['name'], # единственный параметр, который есть у всех элементов games
                            desc=gamedata.get('full_desc', {'desc':'<Нет описания>'})['desc'],
