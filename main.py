@@ -3,7 +3,7 @@ import sqlite3
 import requests
 import sqlalchemy
 from flask import Flask, render_template, request, redirect, url_for, session
-from flask_login import LoginManager, login_user, login_required, logout_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from math import floor
 from ntpath import isfile
 from werkzeug.exceptions import NotFound
@@ -362,8 +362,7 @@ def page_search():
 
 @app.route('/game')
 def page_game():
-    auth = ('_user_id' in session)
-    if auth:
+    if current_user.is_authenticated:
         fav_games = get_current_user().favourite.split(',')[:-1]
     else:
         fav_games = ''
